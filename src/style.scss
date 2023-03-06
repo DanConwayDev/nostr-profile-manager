@@ -1,0 +1,68 @@
+.hero {
+    // background-image: url("https://i.imgur.com/DYDX9DU.jpg");
+    // background-size:cover
+    width: 100%;
+};
+
+
+@import "../node_modules/@picocss/pico/scss/pico.scss";
+
+#mainnav.inactive a {
+    display:none;
+}
+.nav-container {
+    border-bottom: 1px solid #eee;
+}
+.historytable {
+    ul {
+        padding: 0;
+        margin: 0;
+    }
+    li {
+        list-style: none;
+        margin:0;
+    }
+}
+.hero {
+    > div {
+        margin:auto;
+    }
+    img.hero-logo {
+        margin:100px 0;
+        width:300px;
+        text-align: center;
+    }
+    h1 {
+        margin-bottom: 16px;
+    }
+}
+
+img[src=""] {
+    display: none;
+}
+
+.profileform {
+    max-width: 800px;
+    img#metadata-form-banner {
+        max-height: 200px;
+    }
+    img#metadata-form-picture {
+        max-height:150px;
+        max-width:150px;
+    }
+}
+.added mark {
+    background-color:rgb(29, 255, 116)
+}
+.removed mark {
+    background-color:rgb(255, 125, 125)
+}
+
+.profile-summary-card {
+    img {
+        max-width: 75px;
+        border-radius: 38px;
+        float: left;
+        margin: 10px 10px 10px 0;
+    }
+}

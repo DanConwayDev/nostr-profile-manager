@@ -1,0 +1,126 @@
+import {
+  generateContactsChanges, generateHistoryTable, generateMetadataChanges, Kind3Event,
+} from './LoadHistory';
+import { MetadataFlex } from './LoadMetadataPage';
+import SampleEvents from './SampleEvents';
+
+const weekago = Math.round((Date.now() / 1000) - (60 * 60 * 24 * 7.1));
+const monthsago = Math.round((Date.now() / 1000) - (60 * 60 * 24 * 7 * 5));
+
+describe('generateHistoryTable', () => {
+  test('null history parameter returns <p>none</p>', () => {
+    expect(generateHistoryTable(null)).toEqual('<p>none</p>');
+  });
+  test('ago property reflects created_at date for each change', () => {
+    const r = generateHistoryTable([
+      { ...SampleEvents.kind0, created_at: weekago },
+      { ...SampleEvents.kind0, created_at: monthsago },
+    ]);
+    expect(r).toContain('1 week ago');
+    expect(r).toContain('1 month ago');
+  });
+});
+
+describe('generateMetadataChanges', () => {
+  const kind0content = JSON.parse(SampleEvents.kind0.content) as MetadataFlex;
+  test('last event list all the fields, one per item in change array', () => {
+    const r = generateMetadataChanges([
+      { ...SampleEvents.kind0 },
+      {
+        ...SampleEvents.kind0,
+        content: JSON.stringify({
+          name: 'Bob',
+          about: 'my profile is great!',
+          picture: 'https://example.com/profile.png',
+        }),
+      },
+    ]);
+    expect(r[1].changes).toEqual([
+      'name: Bob',
+      'about: my profile is great!',
+      'picture: https://example.com/profile.png',
+    ]);
+  });
+  test('when a content property is added, the addition is listed in the changes array', () => {
+    const r = generateMetadataChanges([
+      {
+        ...SampleEvents.kind0,
+        content: JSON.stringify({ ...kind0content, custom: 'custom property value' }),
+      },
+      { ...SampleEvents.kind0 },
+    ]);
+    expect(r[0].changes).toEqual(['added custom: custom property value']);
+  });
+  test('when a content property is modified, the modification is listed in the changes array', () => {
+    const r = generateMetadataChanges([
+      {
+        ...SampleEvents.kind0,
+        content: JSON.stringify({ ...kind0content, name: 'Bob' }),
+      },
+      { ...SampleEvents.kind0 },
+    ]);
+    expect(r[0].changes).toEqual(['modified name: Bob']);
+  });
+  test('when a content property is removed, the removal is listed in the changes array', () => {
+    const c = { ...kind0content };
+    delete c.about;
+    const r = generateMetadataChanges([
+      { ...SampleEvents.kind0, content: JSON.stringify(c) },
+      { ...SampleEvents.kind0 },
+    ]);
+    expect(r[0].changes).toEqual(['removed about']);
+  });
+  test('when a content properties are added, modified and removed, this is all referenced in the changes array', () => {
+    const c = { ...kind0content, name: 'Bob', custom: 'custom property value' };
+    delete c.about;
+    const r = generateMetadataChanges([
+      { ...SampleEvents.kind0, content: JSON.stringify(c) },
+      { ...SampleEvents.kind0 },
+    ]);
+    expect(r[0].changes).toEqual([
+      'added custom: custom property value',
+      'modified name: Bob',
+      'removed about',
+    ]);
+  });
+});
+
+describe('generateContactsChanges', () => {
+  test('the oldest event list all the contacts as a single change', () => {
+    const r = generateContactsChanges([
+      { ...SampleEvents.kind3 } as Kind3Event,
+    ]);
+    expect(r[0].changes).toEqual(['<mark>alice</mark>, <mark>bob</mark>, <mark>carol</mark>']);
+  });
+  test('when a contact is added, the addition is listed in the changes array', () => {
+    const s = JSON.parse(JSON.stringify(SampleEvents.kind3));
+    s.tags.push(['p', '3248364987321649321', '', 'fred']);
+    const r = generateContactsChanges([
+      s,
+      { ...SampleEvents.kind3 },
+    ]);
+    expect(r[0].changes).toEqual(['<div class="added">added <mark>fred</mark></div>']);
+  });
+  test('when a contact is removed, the removal is listed in the changes array', () => {
+    const s = JSON.parse(JSON.stringify(SampleEvents.kind3));
+    delete s.tags[2];
+    const r = generateContactsChanges([
+      s,
+      { ...SampleEvents.kind3 },
+    ]);
+    expect(r[0].changes).toEqual(['<div class="removed">removed <mark>carol</mark></div>']);
+  });
+  test('when a contact is added and another removed, both events are listed in the changes array', () => {
+    const s = JSON.parse(JSON.stringify(SampleEvents.kind3));
+    delete s.tags[2];
+    s.tags.push(['p', '3248364987321649321', '', 'fred']);
+    const r = generateContactsChanges([
+      s,
+      { ...SampleEvents.kind3 },
+    ]);
+    expect(r[0].changes).toEqual([
+      '<div class="added">added <mark>fred</mark></div>',
+      '<div class="removed">removed <mark>carol</mark></div>',
+    ]);
+  });
+});
