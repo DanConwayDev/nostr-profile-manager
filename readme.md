@@ -13,7 +13,7 @@ Supported profile events: kind `0`, `2`, `10002` and `3`.
 - [x] backup your profile events to offline browser storage
 - [x] review changes between backups
   - [x] `0`
-  - [ ] `10002` and `2`
+  - [x] `10002`
   - [x] `3`
 - [ ] selectively restore previous versions
 - [x] download profile backup history as JSON file
@@ -35,8 +35,8 @@ Supported profile events: kind `0`, `2`, `10002` and `3`.
     - [ ] Contacts recommendation based off social graph
     - [ ] Suggest updates to contact relay based on Contact's kind `10002` and `2` events
 
-- [ ] Relays
-  - [ ] editable table of read / write relays kind `10002` event
+- [x] Relays
+  - [x] editable table of read / write relays kind `10002` event
   - [ ] auto suggestion of `10002` event based on contact's relays if no event present
   - [ ] evaluation of `10002` based on contact's
   - [ ] decentralisation score to encourage users not to use the same relay

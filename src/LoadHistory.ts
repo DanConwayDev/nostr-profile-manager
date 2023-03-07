@@ -104,11 +104,63 @@ export const generateContactsChanges = (
   };
 });
 
+export type Kind10002Tag = ['r', string] | ['r', string, 'read' | 'write' ];
+
+export interface Kind10002Event extends Event {
+  kind:3;
+  tags:Kind10002Tag[]
+}
+
+const summariseRelay = (r: Kind10002Tag): string => r[1] + (r[2] ? ` ${r[2]} only` : '');
+
+export const generateRelayChanges = (
+  history: Kind10002Event[],
+):VersionChange[] => history.map((e, i, a) => {
+  const changes:string[] = [];
+  const current = e.tags.filter((t) => t[0] === 'r');
+  // if first backup list all relays
+  if (i === a.length - 1) e.tags.forEach((r) => changes.push(summariseRelay(r)));
+  else {
+    const next = a[i + 1].tags;
+    // list adds
+    const added = current.filter((c) => !next.some((n) => n[1] === c[1]));
+    if (added.length > 0) {
+      added.forEach((r) => changes.push(
+        `<div class="added">added <mark>${summariseRelay(r)}</mark></div>`,
+      ));
+    }
+    // list modified
+    const modified = current.filter(
+      (c) => next.filter((n) => n[1] === c[1]).some((n) => c[2] !== n[2]),
+    );
+    if (modified.length > 0) {
+      modified.forEach((r) => changes.push(
+        `<div class="modified">modified <mark>${summariseRelay(r)}</mark></div>`,
+      ));
+    }
+    // list deletes
+    const removed = next.filter((c) => !current.some((n) => n[1] === c[1]));
+    if (removed.length > 0) {
+      removed.forEach((r) => changes.push(
+        `<div class="removed">removed <mark>${summariseRelay(r)}</mark></div>`,
+      ));
+    }
+  }
+  return {
+    ago: e.created_at,
+    changes,
+    option: i === 0
+      ? '<ins>Backup Complete<ins>'
+      : `<a href="#" id="restore-contacts-${i}" class="secondary" onclick="event.preventDefault()">Restore</a>`,
+  };
+});
+
 export const generateHistoryTable = (history: Event[] | null):string => {
   if (!history || history.length === 0) return '<p>none</p>';
   let changes:VersionChange[];
   if (history[0].kind === 0) changes = generateMetadataChanges(history);
   else if (history[0].kind === 3) changes = generateContactsChanges(history as Kind3Event[]);
+  else if (history[0].kind === 10002) changes = generateRelayChanges(history as Kind10002Event[]);
   else changes = [];
   return generateChangesTable(changes);
 };

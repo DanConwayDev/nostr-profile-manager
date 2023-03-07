@@ -1,5 +1,6 @@
 import {
-  generateContactsChanges, generateHistoryTable, generateMetadataChanges, Kind3Event,
+  generateContactsChanges, generateHistoryTable, generateMetadataChanges, generateRelayChanges,
+  Kind10002Event, Kind3Event,
 } from './LoadHistory';
 import { MetadataFlex } from './LoadMetadataPage';
 import SampleEvents from './SampleEvents';
@@ -121,6 +122,124 @@ describe('generateContactsChanges', () => {
     expect(r[0].changes).toEqual([
       '<div class="added">added <mark>fred</mark></div>',
       '<div class="removed">removed <mark>carol</mark></div>',
+    ]);
+  });
+});
+
+describe('generateRelaysChanges', () => {
+  test('the oldest event list all the relays', () => {
+    const r = generateRelayChanges([
+      {
+        ...SampleEvents.kind10002,
+        tags: [
+          ['r', 'wss://alicerelay.example.com'],
+          ['r', 'wss://brando-relay.com'],
+          ['r', 'wss://brando-relay1.com'],
+        ],
+      } as Kind10002Event,
+    ]);
+    expect(r[0].changes).toEqual([
+      'wss://alicerelay.example.com',
+      'wss://brando-relay.com',
+      'wss://brando-relay1.com',
+    ]);
+  });
+  test('read only and write only relays are maked as such', () => {
+    const r = generateRelayChanges([
+      {
+        ...SampleEvents.kind10002,
+        tags: [
+          ['r', 'wss://alicerelay.example.com'],
+          ['r', 'wss://brando-relay.com', 'read'],
+          ['r', 'wss://brando-relay1.com', 'write'],
+        ],
+      } as Kind10002Event,
+    ]);
+    expect(r[0].changes).toEqual([
+      'wss://alicerelay.example.com',
+      'wss://brando-relay.com read only',
+      'wss://brando-relay1.com write only',
+    ]);
+  });
+  test('when a relay is added, the addition is listed in the changes array', () => {
+    const r = generateRelayChanges([
+      {
+        ...SampleEvents.kind10002,
+        tags: [
+          ['r', 'wss://alicerelay.example.com'],
+          ['r', 'wss://brando-relay.com', 'read'],
+          ['r', 'wss://brando-relay1.com', 'write'],
+        ],
+      } as Kind10002Event,
+      {
+        ...SampleEvents.kind10002,
+        tags: [
+          ['r', 'wss://alicerelay.example.com'],
+          ['r', 'wss://brando-relay.com', 'read'],
+        ],
+      } as Kind10002Event,
+    ]);
+    expect(r[0].changes).toEqual(['<div class="added">added <mark>wss://brando-relay1.com write only</mark></div>']);
+  });
+  test('when a relay is removed, the removal is listed in the changes array', () => {
+    const r = generateRelayChanges([
+      {
+        ...SampleEvents.kind10002,
+        tags: [
+          ['r', 'wss://alicerelay.example.com'],
+          ['r', 'wss://brando-relay.com', 'read'],
+        ],
+      } as Kind10002Event,
+      {
+        ...SampleEvents.kind10002,
+        tags: [
+          ['r', 'wss://alicerelay.example.com'],
+          ['r', 'wss://brando-relay.com', 'read'],
+          ['r', 'wss://brando-relay1.com', 'write'],
+        ],
+      } as Kind10002Event,
+    ]);
+    expect(r[0].changes).toEqual(['<div class="removed">removed <mark>wss://brando-relay1.com write only</mark></div>']);
+  });
+  test('when a relay is modified, the removal is listed in the changes array', () => {
+    const r = generateRelayChanges([
+      {
+        ...SampleEvents.kind10002,
+        tags: [
+          ['r', 'wss://alicerelay.example.com'],
+          ['r', 'wss://brando-relay.com', 'read'],
+        ],
+      } as Kind10002Event,
+      {
+        ...SampleEvents.kind10002,
+        tags: [
+          ['r', 'wss://alicerelay.example.com'],
+          ['r', 'wss://brando-relay.com', 'write'],
+        ],
+      } as Kind10002Event,
+    ]);
+    expect(r[0].changes).toEqual(['<div class="modified">modified <mark>wss://brando-relay.com read only</mark></div>']);
+  });
+  test('when a contact is added and another removed, both events are listed in the changes array', () => {
+    const r = generateRelayChanges([
+      {
+        ...SampleEvents.kind10002,
+        tags: [
+          ['r', 'wss://brando-relay1.com', 'write'],
+          ['r', 'wss://brando-relay.com', 'read'],
+        ],
+      } as Kind10002Event,
+      {
+        ...SampleEvents.kind10002,
+        tags: [
+          ['r', 'wss://alicerelay.example.com'],
+          ['r', 'wss://brando-relay.com', 'read'],
+        ],
+      } as Kind10002Event,
+    ]);
+    expect(r[0].changes).toEqual([
+      '<div class="added">added <mark>wss://brando-relay1.com write only</mark></div>',
+      '<div class="removed">removed <mark>wss://alicerelay.example.com</mark></div>',
     ]);
   });
 });
