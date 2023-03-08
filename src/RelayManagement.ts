@@ -1,23 +1,25 @@
-import { Event, Relay, relayInit } from 'nostr-tools';
+import { Event, SimplePool } from 'nostr-tools';
 
-let drelay: Relay;
-export const setupDefaultRelays = async ():Promise<void> => {
-  if (typeof drelay !== 'undefined') return new Promise((r) => { r(); });
-  drelay = relayInit('wss://relay.damus.io');
-  return drelay.connect();
-};
-/** setupMyRelays TODO */
-export const setupMyRelays = async () => setupDefaultRelays();
+const pool = new SimplePool();
+let currentrelays = [
+  'wss://relay.damus.io',
+  'wss://nostr-pub.wellorder.net',
+  'wss://nostr-relay.wlvs.space',
+];
 
 export const requestMyProfileFromRelays = async (
   pubkey:string,
   eventProcesser: (event: Event) => void,
+  relays?:string[],
 ) => {
-  await setupDefaultRelays();
-  const sub = drelay.sub([{
-    kinds: [0, 2, 10002, 3],
-    authors: [pubkey],
-  }]);
+  if (relays) currentrelays = relays;
+  const sub = pool.sub(
+    currentrelays,
+    [{
+      kinds: [0, 2, 10002, 3],
+      authors: [pubkey],
+    }],
+  );
   return new Promise<void>((r) => {
     sub.on('event', (event:Event) => {
       if (
@@ -28,15 +30,13 @@ export const requestMyProfileFromRelays = async (
       }
     });
     sub.on('eose', () => {
-      // sub.unsub();
       r();
     });
   });
 };
 
 export const publishEventToRelay = async (event:Event):Promise<boolean> => {
-  await setupDefaultRelays();
-  const pub = drelay.publish(event);
+  const pub = pool.publish(currentrelays, event);
   return new Promise((r) => {
     pub.on('ok', () => r(true));
     pub.on('failed', () => r(false));

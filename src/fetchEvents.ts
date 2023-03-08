@@ -92,6 +92,21 @@ export const fetchCachedProfileEvent = (kind: 0 | 2 | 10002 | 3): null | Event =
   return a[0];
 };
 
+const getRelays = () => {
+  const e = fetchCachedProfileEvent(10002);
+  const mywriterelays = !e ? [] : e.tags.filter((r) => !r[2] || r[2] === 'write').map((r) => r[1]);
+  // return minimum of 3 relays + blastr, filling in with default relays (removing duplicates)
+  return [
+    ...(mywriterelays.length > 3 ? mywriterelays : [...new Set([
+      ...mywriterelays,
+      'wss://relay.damus.io',
+      'wss://nostr-pub.wellorder.net',
+      'wss://nostr-relay.wlvs.space',
+    ])].slice(0, 3)),
+    'wss://nostr.mutinywallet.com', // blastr
+  ];
+};
+
 /** get my latest profile events either from cache (if isUptodate) or from relays */
 export const fetchMyProfileEvents = async (
   pubkey:string,
@@ -99,14 +114,10 @@ export const fetchMyProfileEvents = async (
 ): Promise<void> => {
   // get events from relays, store them and run profileEventProcesser
   if (!isUptodate()) {
-    /**
-     * TODO also run this if we havn't checked for x minutes and we aren't already
-     * listening on my write relays
-     */
     await requestMyProfileFromRelays(pubkey, (event: Event) => {
       storeMyProfileEvent(event);
       profileEventProcesser(event);
-    });
+    }, getRelays());
     // update last-fetch-from-relays date
     updateLastFetchDate();
   } else {

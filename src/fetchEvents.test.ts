@@ -205,41 +205,171 @@ describe('', () => {
       });
     });
     describe('when isUptodate returns false', () => {
-      const mockstoreMyProfileEvent = jest.spyOn(FetchEvents, 'storeMyProfileEvent');
-      beforeEach(async () => {
-        mockisUptodate.mockReturnValue(false);
-        mockrequestMyProfileFromRelays.mockReset()
-          .mockImplementation(async (_pubkey, eventProcessor) => {
-            eventProcessor({ ...SampleEvents.kind0 });
-            eventProcessor({ ...SampleEvents.kind3 });
+      describe('and when cached 10002 event is present', () => {
+        const doBefore = async () => {
+          mockisUptodate.mockReturnValue(false);
+          mockrequestMyProfileFromRelays.mockReset()
+            .mockImplementation(async (_pubkey, eventProcessor) => {
+              eventProcessor({ ...SampleEvents.kind0 });
+              eventProcessor({ ...SampleEvents.kind3 });
+            });
+          await fetchMyProfileEvents(SampleEvents.kind0.pubkey, mockEventProcessor);
+        };
+        test('1 write relays, function called with custom relay and 2 default relays + blaster', async () => {
+          storeMyProfileEvent({
+            ...SampleEvents.kind10002,
+            tags: [
+              ['r', 'wss://alicerelay.example.com'],
+            ],
           });
-        await fetchMyProfileEvents(SampleEvents.kind0.pubkey, mockEventProcessor);
+          await doBefore();
+          expect(mockrequestMyProfileFromRelays).toBeCalledWith(
+            expect.anything(),
+            expect.anything(),
+            [
+              'wss://alicerelay.example.com',
+              'wss://relay.damus.io',
+              'wss://nostr-pub.wellorder.net',
+              'wss://nostr.mutinywallet.com',
+            ],
+          );
+        });
+        test('2 write relays function called with custom relays and 1 default relays + blaster', async () => {
+          storeMyProfileEvent({
+            ...SampleEvents.kind10002,
+            tags: [
+              ['r', 'wss://alicerelay.example.com'],
+              ['r', 'wss://expensive-relay.example2.com', 'write'],
+            ],
+          });
+          await doBefore();
+          expect(mockrequestMyProfileFromRelays).toBeCalledWith(
+            expect.anything(),
+            expect.anything(),
+            [
+              'wss://alicerelay.example.com',
+              'wss://expensive-relay.example2.com',
+              'wss://relay.damus.io',
+              'wss://nostr.mutinywallet.com',
+            ],
+          );
+        });
+        test('2 write relays including first defauly relay. function called with custom relays and 1 different default relays + blaster', async () => {
+          storeMyProfileEvent({
+            ...SampleEvents.kind10002,
+            tags: [
+              ['r', 'wss://relay.damus.io'],
+              ['r', 'wss://expensive-relay.example2.com', 'write'],
+            ],
+          });
+          await doBefore();
+          expect(mockrequestMyProfileFromRelays).toBeCalledWith(
+            expect.anything(),
+            expect.anything(),
+            [
+              'wss://relay.damus.io',
+              'wss://expensive-relay.example2.com',
+              'wss://nostr-pub.wellorder.net',
+              'wss://nostr.mutinywallet.com',
+            ],
+          );
+        });
+        test('with 4 write relays function called with all custom relays + blaster', async () => {
+          storeMyProfileEvent({
+            ...SampleEvents.kind10002,
+            tags: [
+              ['r', 'wss://alicerelay.example.com'],
+              ['r', 'wss://brando-relay.com'],
+              ['r', 'wss://expensive-relay.example2.com', 'write'],
+              ['r', 'wss://alicerelay.example3.com'],
+            ],
+          });
+          await doBefore();
+          expect(mockrequestMyProfileFromRelays).toBeCalledWith(
+            expect.anything(),
+            expect.anything(),
+            [
+              'wss://alicerelay.example.com',
+              'wss://brando-relay.com',
+              'wss://expensive-relay.example2.com',
+              'wss://alicerelay.example3.com',
+              'wss://nostr.mutinywallet.com',
+            ],
+          );
+        });
+        test('custom read relays ignored', async () => {
+          storeMyProfileEvent({
+            ...SampleEvents.kind10002,
+            tags: [
+              ['r', 'wss://alicerelay.example.com'],
+              ['r', 'wss://brando-relay.com'],
+              ['r', 'wss://expensive-relay.example2.com', 'write'],
+              ['r', 'wss://nostr-relay.example.com', 'read'],
+            ],
+          });
+          await doBefore();
+          expect(mockrequestMyProfileFromRelays).toBeCalledWith(
+            expect.anything(),
+            expect.anything(),
+            [
+              'wss://alicerelay.example.com',
+              'wss://brando-relay.com',
+              'wss://expensive-relay.example2.com',
+              'wss://nostr.mutinywallet.com',
+            ],
+          );
+        });
       });
-      test('updateLastFetchDate called once', () => {
-        expect(mockupdateLastFetchDate).toBeCalledTimes(1);
-      });
-      test('fetchCachedProfileEvent never called', () => {
-        expect(fetchCachedProfileEventSpy).toBeCalledTimes(0);
-      });
-      test('requestMyProfileFromRelays called', () => {
-        expect(mockrequestMyProfileFromRelays).toBeCalledTimes(1);
-      });
-      test('mockrequestMyProfileFromRelays called with correct pubkey', () => {
-        expect(mockrequestMyProfileFromRelays).toBeCalledWith(
-          SampleEvents.kind0.pubkey,
-          expect.anything(),
-        );
-      });
-      test('eventProcessor called with events passed through by requestMyProfileFromRelays\'s event processor', async () => {
-        expect(mockEventProcessor).toBeCalledWith({ ...SampleEvents.kind0 });
-        expect(mockEventProcessor).toBeCalledWith({ ...SampleEvents.kind3 });
-      });
-      test('storeMyProfileEvent called with events passed through by requestMyProfileFromRelays\'s event processor', async () => {
-        expect(mockstoreMyProfileEvent).toBeCalledWith({ ...SampleEvents.kind0 });
-        expect(mockstoreMyProfileEvent).toBeCalledWith({ ...SampleEvents.kind3 });
-      });
-      test('eventProcessor not called when profile event kind isn\'t found by requestMyProfileFromRelays', async () => {
-        expect(mockEventProcessor).toBeCalledTimes(2);
+      describe('and when no cached 10002 events are present', () => {
+        const mockstoreMyProfileEvent = jest.spyOn(FetchEvents, 'storeMyProfileEvent');
+        beforeEach(async () => {
+          mockisUptodate.mockReturnValue(false);
+          mockrequestMyProfileFromRelays.mockReset()
+            .mockImplementation(async (_pubkey, eventProcessor) => {
+              eventProcessor({ ...SampleEvents.kind0 });
+              eventProcessor({ ...SampleEvents.kind3 });
+            });
+          await fetchMyProfileEvents(SampleEvents.kind0.pubkey, mockEventProcessor);
+        });
+        test('updateLastFetchDate called once', () => {
+          expect(mockupdateLastFetchDate).toBeCalledTimes(1);
+        });
+        test('fetchCachedProfileEvent only to be called once to getRelays', () => {
+          expect(fetchCachedProfileEventSpy).toBeCalledTimes(1);
+        });
+        test('requestMyProfileFromRelays called', () => {
+          expect(mockrequestMyProfileFromRelays).toBeCalledTimes(1);
+        });
+        test('mockrequestMyProfileFromRelays called with correct pubkey', () => {
+          expect(mockrequestMyProfileFromRelays).toBeCalledWith(
+            SampleEvents.kind0.pubkey,
+            expect.anything(),
+            expect.anything(),
+          );
+        });
+        test('mockrequestMyProfileFromRelays called with correct default relays', () => {
+          expect(mockrequestMyProfileFromRelays).toBeCalledWith(
+            expect.anything(),
+            expect.anything(),
+            [
+              'wss://relay.damus.io',
+              'wss://nostr-pub.wellorder.net',
+              'wss://nostr-relay.wlvs.space',
+              'wss://nostr.mutinywallet.com',
+            ],
+          );
+        });
+        test('eventProcessor called with events passed through by requestMyProfileFromRelays\'s event processor', async () => {
+          expect(mockEventProcessor).toBeCalledWith({ ...SampleEvents.kind0 });
+          expect(mockEventProcessor).toBeCalledWith({ ...SampleEvents.kind3 });
+        });
+        test('storeMyProfileEvent called with events passed through by requestMyProfileFromRelays\'s event processor', async () => {
+          expect(mockstoreMyProfileEvent).toBeCalledWith({ ...SampleEvents.kind0 });
+          expect(mockstoreMyProfileEvent).toBeCalledWith({ ...SampleEvents.kind3 });
+        });
+        test('eventProcessor not called when profile event kind isn\'t found by requestMyProfileFromRelays', async () => {
+          expect(mockEventProcessor).toBeCalledTimes(2);
+        });
       });
     });
   });

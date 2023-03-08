@@ -6,7 +6,7 @@ Only javascript dependancy is [nostr-tools](https://github.com/nbd-wtf/nostr-too
 
 ## Features
 
-Supported profile events: kind `0`, `2`, `10002` and `3`.
+Supported profile events: kind `0`, `10002` and `3`.
 
 ##### Backup and Restore
 
@@ -44,7 +44,6 @@ Supported profile events: kind `0`, `2`, `10002` and `3`.
 ##### Lightweight and Efficent
 - [ ] only javascript dependancy is nostr-tools (TODO: remove timeago)
 - [x] connects to the minimum number of relays
-  - [ ] connect relays specified in `10002` or `2`
-  - [ ] if no `10002` or `2` events are found it crawls through a number of popular relays to ensure it has your latest profile events. (currently it just connects to damus)
+  - [x] connect relays specified in `10002` or 3 default relays
 - [x] minimises the number of open  websockets
-- [ ] use blastr relay to send profile events far and wide
+- [x] use blastr relay to send profile events far and wide

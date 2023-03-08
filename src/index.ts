@@ -1,7 +1,6 @@
 import { Event, UnsignedEvent } from 'nostr-tools';
 import { generateLogoHero, LoadProfileHome } from './LoadProfileHome';
-import { setupDefaultRelays, setupMyRelays } from './RelayManagement';
-import { fetchCachedProfileEvent, fetchMyProfileEvents } from './fetchEvents';
+import { fetchMyProfileEvents } from './fetchEvents';
 import { localStorageGetItem, localStorageSetItem } from './LocalStorage';
 import { LoadMetadataPage } from './LoadMetadataPage';
 import LoadContactsPage from './LoadContactsPage';
@@ -25,13 +24,6 @@ const loadProfile = async () => {
   (document.getElementById('navrelays') as HTMLElement).onclick = LoadRelaysPage;
   // load profile page (in loading mode)
   LoadProfileHome();
-  // if my relays are known, connect to them
-  if (
-    fetchCachedProfileEvent(10002) !== null
-    || fetchCachedProfileEvent(2) !== null
-  ) await setupMyRelays();
-  // otherwise connect to default relays
-  else await setupDefaultRelays();
   // load profile data
   await fetchMyProfileEvents(
     localStorageGetItem('pubkey') as string,
