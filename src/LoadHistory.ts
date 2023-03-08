@@ -1,5 +1,6 @@
 import * as timeago from 'timeago.js';
 import { Event } from 'nostr-tools';
+import { fetchCachedProfileEventHistory, submitUnsignedEvent } from './fetchEvents';
 
 export type VersionChange = {
   ago:number;
@@ -49,7 +50,7 @@ export const generateMetadataChanges = (
     changes,
     option: i === 0
       ? '<ins>Backup Complete<ins>'
-      : `<a href="#" id="restore-metadata-${i}" class="secondary" onclick="event.preventDefault();alert('feature coming soon...');">Restore</a>`,
+      : `<a href="#" id="restore-${e.kind}-${i}" class="secondary" onclick="event.preventDefault();alert('feature coming soon...');">Restore</a>`,
   };
 });
 
@@ -100,7 +101,7 @@ export const generateContactsChanges = (
     changes,
     option: i === 0
       ? '<ins>Backup Complete<ins>'
-      : `<a href="#" id="restore-contacts-${i}" class="secondary" onclick="event.preventDefault()">Restore</a>`,
+      : `<a href="#" id="restore-${e.kind}-${i}" class="secondary" onclick="event.preventDefault()">Restore</a>`,
   };
 });
 
@@ -151,7 +152,7 @@ export const generateRelayChanges = (
     changes,
     option: i === 0
       ? '<ins>Backup Complete<ins>'
-      : `<a href="#" id="restore-contacts-${i}" class="secondary" onclick="event.preventDefault()">Restore</a>`,
+      : `<a href="#" id="restore-${e.kind}-${i}" class="secondary" onclick="event.preventDefault()">Restore</a>`,
   };
 });
 
@@ -163,4 +164,25 @@ export const generateHistoryTable = (history: Event[] | null):string => {
   else if (history[0].kind === 10002) changes = generateRelayChanges(history as Kind10002Event[]);
   else changes = [];
   return generateChangesTable(changes);
+};
+
+export const activateRestoreButtons = (history: Event[] | null, afterRestore: ()=> void):void => {
+  history?.forEach((e, i) => {
+    const eid = `restore-${e.kind}-${i}`;
+    const el = document.getElementById(eid) as HTMLButtonElement;
+    const { id, sig, ...unsigned } = e;
+    unsigned.created_at = Math.floor(Date.now() / 1000);
+    el.onclick = async () => {
+      const r = await submitUnsignedEvent(unsigned, eid, 'Restored!');
+      if (r) setTimeout(afterRestore, 1000);
+    };
+  });
+};
+
+export const loadBackupHistory = (RootElementID:string, kind: 0 | 10002 | 3) => {
+  const h = fetchCachedProfileEventHistory(kind);
+  const table = generateHistoryTable(h);
+  (document.getElementById(RootElementID) as HTMLDivElement)
+    .innerHTML = `<h4>Backup History</h4>${table}`;
+  activateRestoreButtons(h, () => loadBackupHistory(RootElementID, kind));
 };

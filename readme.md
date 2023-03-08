@@ -15,7 +15,7 @@ Supported profile events: kind `0`, `2`, `10002` and `3`.
   - [x] `0`
   - [x] `10002`
   - [x] `3`
-- [ ] selectively restore previous versions
+- [x] selectively restore previous versions
 - [x] download profile backup history as JSON file
 - [ ] restore backups from JSON file
 

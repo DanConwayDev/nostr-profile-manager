@@ -1,6 +1,6 @@
 import { nip05 } from 'nostr-tools';
-import { fetchCachedProfileEvent, fetchCachedProfileEventHistory, publishEvent } from './fetchEvents';
-import { generateHistoryTable } from './LoadHistory';
+import { fetchCachedProfileEvent, submitUnsignedEvent } from './fetchEvents';
+import { loadBackupHistory } from './LoadHistory';
 import { localStorageGetItem } from './LocalStorage';
 
 type MetadataCore = {
@@ -70,11 +70,6 @@ const generateForm = (c:MetadataFlex | null):string => {
 };
 
 const SubmitMetadataForm = async () => {
-  // set loading status
-  const b = document.getElementById('metadatasubmitbutton') as HTMLFormElement;
-  b.setAttribute('disabled', '');
-  b.setAttribute('aria-busy', 'true');
-  b.innerHTML = 'Signing...';
   // construct and populate new content object with form data. avoid reordering properties
   const fd = new FormData(document.getElementById('metadataform') as HTMLFormElement);
   const n:{ [x: string]: unknown; } = {};
@@ -84,24 +79,19 @@ const SubmitMetadataForm = async () => {
       const d = fd.get(`PM-form-${k}`);
       if (d && d !== '') n[k] = d;
     });
-  // sign event
-  if (!window.nostr) return;
-  const ne = await window.nostr.signEvent({
-    pubkey: localStorageGetItem('pubkey') as string,
-    kind: 0,
-    created_at: Math.floor(Date.now() / 1000),
-    content: JSON.stringify(n),
-    tags: [],
-  });
-  // publish
-  b.innerHTML = 'Sending...';
-  await publishEvent(ne);
-  b.removeAttribute('aria-busy');
-  b.innerHTML = 'Recieved by Relays!';
-  setTimeout(() => {
-    b.innerHTML = 'Update';
-    b.removeAttribute('disabled');
-  }, 1000);
+  // submit event
+  const r = await submitUnsignedEvent(
+    {
+      pubkey: localStorageGetItem('pubkey') as string,
+      kind: 0,
+      created_at: Math.floor(Date.now() / 1000),
+      content: JSON.stringify(n),
+      tags: [],
+    },
+    'metadatasubmitbutton',
+  );
+  // reload history
+  if (r) loadBackupHistory('metadatahistory', 0);
 };
 
 const loadMetadataForm = (RootElementID:string) => {
@@ -148,12 +138,6 @@ const loadMetadataForm = (RootElementID:string) => {
   };
 };
 
-const loadMetadataBackupHistory = (RootElementID:string) => {
-  const table = generateHistoryTable(fetchCachedProfileEventHistory(0));
-  (document.getElementById(RootElementID) as HTMLDivElement)
-    .innerHTML = `<h4>Backup History</h4>${table}`;
-};
-
 export const LoadMetadataPage = () => {
   const o:HTMLElement = document.getElementById('PM-container') as HTMLElement;
   o.innerHTML = `
@@ -163,5 +147,5 @@ export const LoadMetadataPage = () => {
     <div>
   `;
   loadMetadataForm('metadataform');
-  loadMetadataBackupHistory('metadatahistory');
+  loadBackupHistory('metadatahistory', 0);
 };

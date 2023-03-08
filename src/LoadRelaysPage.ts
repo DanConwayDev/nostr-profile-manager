@@ -1,5 +1,5 @@
-import { fetchCachedProfileEvent, fetchCachedProfileEventHistory, publishEvent } from './fetchEvents';
-import { generateHistoryTable, Kind10002Event, Kind10002Tag } from './LoadHistory';
+import { fetchCachedProfileEvent, submitUnsignedEvent } from './fetchEvents';
+import { Kind10002Event, Kind10002Tag, loadBackupHistory } from './LoadHistory';
 import { localStorageGetItem } from './LocalStorage';
 
 const generateRelayFormRow = (index:number, tag?:Kind10002Tag):string => `
@@ -64,12 +64,7 @@ const generateRelayForm = (event: Kind10002Event | null):string => `
 `;
 
 const SubmitRelayForm = async () => {
-  // set loading status
-  const b = document.getElementById('relayssubmitbutton') as HTMLFormElement;
-  b.setAttribute('disabled', '');
-  b.setAttribute('aria-busy', 'true');
-  b.innerHTML = 'Signing...';
-  // construct and populate new content object with form data. avoid reordering properties
+  // construct and populate new content object with form data
   const fd = new FormData(document.getElementById('relaysform') as HTMLFormElement);
   const tags = Array.from(Array(100)).map((_e, i) => {
     const url = fd.get(`PM-form-relay-${i}-address`);
@@ -80,24 +75,19 @@ const SubmitRelayForm = async () => {
     if (w && r) return base;
     return ['r', fd.get(`PM-form-relay-${i}-address`), r ? 'read' : 'write'] as Kind10002Tag;
   }).filter((v) => v !== null);
-  // sign event
-  if (!window.nostr) return;
-  const ne = await window.nostr.signEvent({
-    pubkey: localStorageGetItem('pubkey') as string,
-    kind: 10002,
-    created_at: Math.floor(Date.now() / 1000),
-    content: '',
-    tags: tags as Kind10002Tag[],
-  });
-  // publish
-  b.innerHTML = 'Sending...';
-  await publishEvent(ne);
-  b.removeAttribute('aria-busy');
-  b.innerHTML = 'Recieved by Relays!';
-  setTimeout(() => {
-    b.innerHTML = 'Update';
-    b.removeAttribute('disabled');
-  }, 1000);
+  // submit event
+  submitUnsignedEvent(
+    {
+      pubkey: localStorageGetItem('pubkey') as string,
+      kind: 10002,
+      created_at: Math.floor(Date.now() / 1000),
+      content: '',
+      tags: tags as Kind10002Tag[],
+    },
+    'relayssubmitbutton',
+  );
+  // reload history
+  loadBackupHistory('relaysbackuphistory', 10002);
 };
 
 const loadRelayForm = (RootElementID:string) => {
@@ -126,14 +116,6 @@ const loadRelayForm = (RootElementID:string) => {
   };
 };
 
-const loadRelaysBackupHistory = (RootElementID:string) => {
-  const table = generateHistoryTable(fetchCachedProfileEventHistory(10002));
-  (document.getElementById(RootElementID) as HTMLDivElement)
-    .innerHTML = `<div class="relaysbackuphistory">
-    <h3>Relays</h3>${table}
-  </div>`;
-};
-
 const LoadRelaysPage = () => {
   const o:HTMLElement = document.getElementById('PM-container') as HTMLElement;
   o.innerHTML = `
@@ -143,7 +125,7 @@ const LoadRelaysPage = () => {
     <div>
   `;
   loadRelayForm('relayforcontainer');
-  loadRelaysBackupHistory('relaysbackuphistory');
+  loadBackupHistory('relaysbackuphistory', 10002);
 };
 
 export default LoadRelaysPage;

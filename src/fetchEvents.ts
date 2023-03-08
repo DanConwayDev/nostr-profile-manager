@@ -1,4 +1,4 @@
-import { Event } from 'nostr-tools';
+import { Event, UnsignedEvent } from 'nostr-tools';
 import { localStorageGetItem, localStorageSetItem } from './LocalStorage';
 import { publishEventToRelay, requestMyProfileFromRelays } from './RelayManagement';
 
@@ -121,5 +121,35 @@ export const fetchMyProfileEvents = async (
 export const publishEvent = async (event:Event):Promise<boolean> => {
   const r = await publishEventToRelay(event);
   if (r) storeMyProfileEvent(event);
+  return r;
+};
+/**
+ * @param e event for signing and publishing
+ * @param ElementId id of button or anchor element that was used for submitting the event
+ * @param innerHTMLAfterSuccess what the button should read after event successfully submitted
+ * @returns true if event was published, false if it was not
+ */
+export const submitUnsignedEvent = async (
+  e:UnsignedEvent,
+  ElementId:string,
+  innerHTMLAfterSuccess:string = 'Update',
+):Promise<boolean> => {
+  const b = document.getElementById(ElementId) as HTMLButtonElement | HTMLAnchorElement;
+  // set loading status
+  b.setAttribute('disabled', '');
+  b.setAttribute('aria-busy', 'true');
+  b.innerHTML = 'Signing...';
+  // sign event
+  if (!window.nostr) return new Promise((r) => { r(false); });
+  const ne = await window.nostr.signEvent(e);
+  // publish
+  b.innerHTML = 'Sending...';
+  const r = await publishEvent(ne);
+  b.removeAttribute('aria-busy');
+  b.innerHTML = 'Recieved by Relays!';
+  setTimeout(() => {
+    b.innerHTML = innerHTMLAfterSuccess;
+    b.removeAttribute('disabled');
+  }, 1000);
   return r;
 };
