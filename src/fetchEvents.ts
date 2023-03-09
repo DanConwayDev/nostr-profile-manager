@@ -95,16 +95,13 @@ export const fetchCachedProfileEvent = (kind: 0 | 2 | 10002 | 3): null | Event =
 const getRelays = () => {
   const e = fetchCachedProfileEvent(10002);
   const mywriterelays = !e ? [] : e.tags.filter((r) => !r[2] || r[2] === 'write').map((r) => r[1]);
-  // return minimum of 3 relays + blastr, filling in with default relays (removing duplicates)
-  return [
-    ...(mywriterelays.length > 3 ? mywriterelays : [...new Set([
-      ...mywriterelays,
-      'wss://relay.damus.io',
-      'wss://nostr-pub.wellorder.net',
-      'wss://nostr-relay.wlvs.space',
-    ])].slice(0, 3)),
-    'wss://nostr.mutinywallet.com', // blastr
-  ];
+  // return minimum of 3 relays, filling in with default relays (removing duplicates)
+  return mywriterelays.length > 3 ? mywriterelays : [...new Set([
+    ...mywriterelays,
+    'wss://relay.damus.io',
+    'wss://nostr-pub.wellorder.net',
+    'wss://nostr-relay.wlvs.space',
+  ])].slice(0, 3);
 };
 
 /** get my latest profile events either from cache (if isUptodate) or from relays */
@@ -114,10 +111,19 @@ export const fetchMyProfileEvents = async (
 ): Promise<void> => {
   // get events from relays, store them and run profileEventProcesser
   if (!isUptodate()) {
+    const starterrelays = getRelays();
     await requestEventsFromRelays([pubkey], (event: Event) => {
       storeMyProfileEvent(event);
       profileEventProcesser(event);
-    }, getRelays(), [0, 2, 10002, 3]);
+    }, starterrelays, [0, 2, 10002, 3]);
+    // if new 10002 event found with more write relays
+    if (
+      fetchCachedProfileEvent(10002)?.tags
+        .some((t) => starterrelays.indexOf(t[1]) === -1 && (!t[2] || t[2] === 'write'))
+    ) {
+      // fetch events again to ensure we got all my profile events
+      await fetchMyProfileEvents(pubkey, profileEventProcesser);
+    }
     // update last-fetch-from-relays date
     updateLastFetchDate();
   } else {
@@ -130,7 +136,13 @@ export const fetchMyProfileEvents = async (
 };
 
 export const publishEvent = async (event:Event):Promise<boolean> => {
-  const r = await publishEventToRelay(event, getRelays());
+  const r = await publishEventToRelay(
+    event,
+    [
+      ...getRelays(),
+      'wss://nostr.mutinywallet.com', // blastr
+    ],
+  );
   if (r) storeMyProfileEvent(event);
   return r;
 };

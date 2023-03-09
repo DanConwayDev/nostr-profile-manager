@@ -215,7 +215,7 @@ describe('', () => {
             });
           await fetchMyProfileEvents(SampleEvents.kind0.pubkey, mockEventProcessor);
         };
-        test('1 write relays, function called with custom relay and 2 default relays + blaster', async () => {
+        test('1 write relays, function called with custom relay and 2 default relays', async () => {
           storeMyProfileEvent({
             ...SampleEvents.kind10002,
             tags: [
@@ -230,12 +230,11 @@ describe('', () => {
               'wss://alicerelay.example.com',
               'wss://relay.damus.io',
               'wss://nostr-pub.wellorder.net',
-              'wss://nostr.mutinywallet.com',
             ],
             expect.anything(),
           );
         });
-        test('2 write relays function called with custom relays and 1 default relays + blaster', async () => {
+        test('2 write relays function called with custom relays and 1 default relays', async () => {
           storeMyProfileEvent({
             ...SampleEvents.kind10002,
             tags: [
@@ -251,12 +250,11 @@ describe('', () => {
               'wss://alicerelay.example.com',
               'wss://expensive-relay.example2.com',
               'wss://relay.damus.io',
-              'wss://nostr.mutinywallet.com',
             ],
             expect.anything(),
           );
         });
-        test('2 write relays including first defauly relay. function called with custom relays and 1 different default relays + blaster', async () => {
+        test('2 write relays including first defauly relay. function called with custom relays and 1 different default relays', async () => {
           storeMyProfileEvent({
             ...SampleEvents.kind10002,
             tags: [
@@ -272,12 +270,11 @@ describe('', () => {
               'wss://relay.damus.io',
               'wss://expensive-relay.example2.com',
               'wss://nostr-pub.wellorder.net',
-              'wss://nostr.mutinywallet.com',
             ],
             expect.anything(),
           );
         });
-        test('with 4 write relays function called with all custom relays + blaster', async () => {
+        test('with 4 write relays function called with all custom relays', async () => {
           storeMyProfileEvent({
             ...SampleEvents.kind10002,
             tags: [
@@ -296,7 +293,6 @@ describe('', () => {
               'wss://brando-relay.com',
               'wss://expensive-relay.example2.com',
               'wss://alicerelay.example3.com',
-              'wss://nostr.mutinywallet.com',
             ],
             expect.anything(),
           );
@@ -319,13 +315,12 @@ describe('', () => {
               'wss://alicerelay.example.com',
               'wss://brando-relay.com',
               'wss://expensive-relay.example2.com',
-              'wss://nostr.mutinywallet.com',
             ],
             expect.anything(),
           );
         });
       });
-      describe('and when no cached 10002 events are present', () => {
+      describe('and when no cached 10002 events are present and none are return', () => {
         const mockstoreMyProfileEvent = jest.spyOn(FetchEvents, 'storeMyProfileEvent');
         beforeEach(async () => {
           mockisUptodate.mockReturnValue(false);
@@ -339,10 +334,7 @@ describe('', () => {
         test('updateLastFetchDate called once', () => {
           expect(mockupdateLastFetchDate).toBeCalledTimes(1);
         });
-        test('fetchCachedProfileEvent only to be called once to getRelays', () => {
-          expect(fetchCachedProfileEventSpy).toBeCalledTimes(1);
-        });
-        test('requestEventsFromRelays called', () => {
+        test('requestEventsFromRelays called once', () => {
           expect(mockrequestEventsFromRelays).toBeCalledTimes(1);
         });
         test('mockrequestEventsFromRelays called with correct pubkey', () => {
@@ -361,7 +353,6 @@ describe('', () => {
               'wss://relay.damus.io',
               'wss://nostr-pub.wellorder.net',
               'wss://nostr-relay.wlvs.space',
-              'wss://nostr.mutinywallet.com',
             ],
             expect.anything(),
           );
@@ -386,6 +377,59 @@ describe('', () => {
           expect(mockEventProcessor).toBeCalledTimes(2);
         });
       });
+      describe('and when new 10002 event is recieved with non-default write relays', () => {
+        beforeEach(async () => {
+          mockisUptodate.mockReturnValue(false);
+          mockrequestEventsFromRelays.mockReset()
+            .mockImplementation(async (_pubkey, eventProcessor) => {
+              eventProcessor({ ...SampleEvents.kind0 });
+              eventProcessor({
+                ...SampleEvents.kind10002,
+                tags: [
+                  ['r', 'wss://alicerelay.example.com'],
+                ],
+              });
+            });
+          await fetchMyProfileEvents(SampleEvents.kind0.pubkey, mockEventProcessor);
+        });
+        test('requestEventsFromRelays called twice', () => {
+          expect(mockrequestEventsFromRelays).toBeCalledTimes(2);
+        });
+        test('mockrequestEventsFromRelays called with correct non-default relays the second time', () => {
+          expect(mockrequestEventsFromRelays).toHaveBeenNthCalledWith(
+            2,
+            expect.anything(),
+            expect.anything(),
+            [
+              'wss://alicerelay.example.com',
+              'wss://relay.damus.io',
+              'wss://nostr-pub.wellorder.net',
+            ],
+            expect.anything(),
+          );
+        });
+      });
+    });
+  });
+  describe('publishEvent', () => {
+    const mockstoreMyProfileEvent = jest.spyOn(FetchEvents, 'storeMyProfileEvent');
+    const mockPublishEventToRelay = jest.spyOn(RelayManagement, 'publishEventToRelay');
+    beforeEach(async () => {
+      mockstoreMyProfileEvent.mockReset();
+      mockPublishEventToRelay.mockReset()
+        .mockImplementation(() => new Promise((r) => { r(true); }));
+    });
+    test('publishEventToRelay is called with getRelays output + blastr', () => {
+      FetchEvents.publishEvent(SampleEvents.kind0);
+      expect(mockPublishEventToRelay).toBeCalledWith(
+        SampleEvents.kind0,
+        [
+          'wss://relay.damus.io',
+          'wss://nostr-pub.wellorder.net',
+          'wss://nostr-relay.wlvs.space',
+          'wss://nostr.mutinywallet.com', // blastr
+        ],
+      );
     });
   });
 });
