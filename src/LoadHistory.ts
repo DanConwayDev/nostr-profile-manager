@@ -90,8 +90,18 @@ export const generateContactsChanges = (
     // list adds
     const added = current.filter((c) => !next.some((n) => sameContact(c, n)));
     if (added.length > 0) changes.push(`<div class="added">added ${added.map(getPetname).join(', ')}</div>`);
-    // TODO: list modified
-    // current.map((c) => JSON.stringify(c))
+    // list modifications
+    const modified = current.filter(
+      (c) => next.filter((n) => n[1] === c[1]).some((n) => c[3] !== n[3]),
+    );
+    modified.forEach((r) => {
+      const nv = next.find((n) => n[1] === r[1]);
+      if (!nv) return null;
+      if (!r[3] && !nv[3]) return null;
+      if (r[3] && !nv[3]) return changes.push(`added petname for ${getPetname(r)}`);
+      if (!r[3] && nv[3]) return changes.push(`removed petname for ${getPetname(r)}, previously ${getPetname(nv)}`);
+      return changes.push(`modified petname for ${getPetname(r)}, previously ${getPetname(nv)}`);
+    });
     // list deletes
     const removed = next.filter((c) => !current.some((n) => sameContact(c, n)));
     if (removed.length > 0) changes.push(`<div class="removed">removed ${removed.map(getPetname).join(', ')}</div>`);
@@ -143,21 +153,19 @@ export const generateRelayChanges = (
     const modified = current.filter(
       (c) => next.filter((n) => n[1] === c[1]).some((n) => c[2] !== n[2]),
     );
-    if (modified.length > 0) {
-      modified.forEach((r) => {
-        const nv = next.find((n) => n[1] === r[1]);
-        let s: string;
-        if (!r[2]) {
-          if (!!nv && nv[2] === 'read') s = '<mark class="added">write</mark> as well as read';
-          else s = '<mark class="added">read</mark> as well as write';
-        } else if (r[2] === 'read') {
-          if (!nv) s = 'only read and no longer <mark class="removed">write</mark>';
-          else s = '<mark class="added">read</mark> instead of <mark class="removed">write</mark>';
-        } else if (!nv) s = 'only write and no longer <mark class="removed">read</mark>';
-        else s = '<mark class="added">write</mark> instead of <mark class="removed">read</mark>';
-        changes.push(`<div class="modified">modified <mark>${r[1]}</mark> to ${s}</div>`);
-      });
-    }
+    modified.forEach((r) => {
+      const nv = next.find((n) => n[1] === r[1]);
+      let s: string;
+      if (!r[2]) {
+        if (!!nv && nv[2] === 'read') s = '<mark class="added">write</mark> as well as read';
+        else s = '<mark class="added">read</mark> as well as write';
+      } else if (r[2] === 'read') {
+        if (!nv) s = 'only read and no longer <mark class="removed">write</mark>';
+        else s = '<mark class="added">read</mark> instead of <mark class="removed">write</mark>';
+      } else if (!nv) s = 'only write and no longer <mark class="removed">read</mark>';
+      else s = '<mark class="added">write</mark> instead of <mark class="removed">read</mark>';
+      changes.push(`<div class="modified">modified <mark>${r[1]}</mark> to ${s}</div>`);
+    });
     // list deletes
     const removed = next.filter((c) => !current.some((n) => n[1] === c[1]));
     if (removed.length > 0) {

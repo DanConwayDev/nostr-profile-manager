@@ -1,6 +1,6 @@
 import {
   generateContactsChanges, generateHistoryTable, generateMetadataChanges, generateRelayChanges,
-  Kind10002Event, Kind3Event,
+  Kind10002Event, Kind10002Tag, Kind3Event,
 } from './LoadHistory';
 import { MetadataFlex } from './LoadMetadataPage';
 import SampleEvents from './SampleEvents';
@@ -87,6 +87,7 @@ describe('generateMetadataChanges', () => {
 });
 
 describe('generateContactsChanges', () => {
+  const shortContactPubkey = (a: Kind10002Tag) => `<mark>${(a[1]).substring(0, 10)}...</mark>`;
   test('the oldest event list all the contacts as a single change', () => {
     const r = generateContactsChanges([
       { ...SampleEvents.kind3 } as Kind3Event,
@@ -110,6 +111,41 @@ describe('generateContactsChanges', () => {
       { ...SampleEvents.kind3 },
     ]);
     expect(r[0].changes).toEqual(['<div class="removed">removed <mark>carol</mark></div>']);
+  });
+  describe('when a contact\'s petname changes, the change is listed in the changes array', () => {
+    test('is removed', () => {
+      const s = JSON.parse(JSON.stringify(SampleEvents.kind3));
+      delete s.tags[2][3];
+      const r = generateContactsChanges([
+        s,
+        { ...SampleEvents.kind3 },
+      ]);
+      expect(r[0].changes).toEqual([
+        `removed petname for ${shortContactPubkey(s.tags[2])}, previously <mark>carol</mark>`,
+      ]);
+    });
+    test('is added', () => {
+      const s = JSON.parse(JSON.stringify(SampleEvents.kind3));
+      delete s.tags[2][3];
+      const r = generateContactsChanges([
+        { ...SampleEvents.kind3 },
+        s,
+      ]);
+      expect(r[0].changes).toEqual([
+        'added petname for <mark>carol</mark>',
+      ]);
+    });
+    test('is modified', () => {
+      const s = JSON.parse(JSON.stringify(SampleEvents.kind3));
+      s.tags[2][3] = 'caroline';
+      const r = generateContactsChanges([
+        s,
+        { ...SampleEvents.kind3 },
+      ]);
+      expect(r[0].changes).toEqual([
+        'modified petname for <mark>caroline</mark>, previously <mark>carol</mark>',
+      ]);
+    });
   });
   test('when a contact is added and another removed, both events are listed in the changes array', () => {
     const s = JSON.parse(JSON.stringify(SampleEvents.kind3));
