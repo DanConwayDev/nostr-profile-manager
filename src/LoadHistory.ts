@@ -123,11 +123,20 @@ export const generateRelayChanges = (
   if (i === a.length - 1) e.tags.forEach((r) => changes.push(summariseRelay(r)));
   else {
     const next = a[i + 1].tags;
+    const relayReadAndWrite = (r:Kind10002Tag, addedorremoveed: 'added' | 'removed'): string => {
+      const wonly = `<mark class="${addedorremoveed}">write</mark>`;
+      const ronly = `<mark class="${addedorremoveed}">read</mark>`;
+      const randw = `${ronly} and ${wonly}`;
+      if (!r[2]) return randw;
+      if (r[2] === 'write') return `${wonly} only`;
+      return `${ronly} only`;
+    };
+
     // list adds
     const added = current.filter((c) => !next.some((n) => n[1] === c[1]));
     if (added.length > 0) {
       added.forEach((r) => changes.push(
-        `<div class="added">added <mark>${summariseRelay(r)}</mark></div>`,
+        `<div>added <mark>${r[1]}</mark> as ${relayReadAndWrite(r, 'added')}</div>`,
       ));
     }
     // list modified
@@ -135,15 +144,25 @@ export const generateRelayChanges = (
       (c) => next.filter((n) => n[1] === c[1]).some((n) => c[2] !== n[2]),
     );
     if (modified.length > 0) {
-      modified.forEach((r) => changes.push(
-        `<div class="modified">modified <mark>${summariseRelay(r)}</mark></div>`,
-      ));
+      modified.forEach((r) => {
+        const nv = next.find((n) => n[1] === r[1]);
+        let s: string;
+        if (!r[2]) {
+          if (!!nv && nv[2] === 'read') s = '<mark class="added">write</mark> as well as read';
+          else s = '<mark class="added">read</mark> as well as write';
+        } else if (r[2] === 'read') {
+          if (!nv) s = 'only read and no longer <mark class="removed">write</mark>';
+          else s = '<mark class="added">read</mark> instead of <mark class="removed">write</mark>';
+        } else if (!nv) s = 'only write and no longer <mark class="removed">read</mark>';
+        else s = '<mark class="added">write</mark> instead of <mark class="removed">read</mark>';
+        changes.push(`<div class="modified">modified <mark>${r[1]}</mark> to ${s}</div>`);
+      });
     }
     // list deletes
     const removed = next.filter((c) => !current.some((n) => n[1] === c[1]));
     if (removed.length > 0) {
       removed.forEach((r) => changes.push(
-        `<div class="removed">removed <mark>${summariseRelay(r)}</mark></div>`,
+        `<div>removed <mark>${r[1]}</mark> which was ${relayReadAndWrite(r, 'removed')}</div>`,
       ));
     }
   }

@@ -51,10 +51,10 @@ img[src=""] {
         max-width:150px;
     }
 }
-.added mark {
+.added mark, mark.added {
     background-color:rgb(29, 255, 116)
 }
-.removed mark {
+.removed mark, mark.removed {
     background-color:rgb(255, 125, 125)
 }
 

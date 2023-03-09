@@ -179,7 +179,7 @@ describe('generateRelaysChanges', () => {
         ],
       } as Kind10002Event,
     ]);
-    expect(r[0].changes).toEqual(['<div class="added">added <mark>wss://brando-relay1.com write only</mark></div>']);
+    expect(r[0].changes).toEqual(['<div>added <mark>wss://brando-relay1.com</mark> as <mark class="added">write</mark> only</div>']);
   });
   test('when a relay is removed, the removal is listed in the changes array', () => {
     const r = generateRelayChanges([
@@ -199,9 +199,9 @@ describe('generateRelaysChanges', () => {
         ],
       } as Kind10002Event,
     ]);
-    expect(r[0].changes).toEqual(['<div class="removed">removed <mark>wss://brando-relay1.com write only</mark></div>']);
+    expect(r[0].changes).toEqual(['<div>removed <mark>wss://brando-relay1.com</mark> which was <mark class="removed">write</mark> only</div>']);
   });
-  test('when a relay is modified, the removal is listed in the changes array', () => {
+  test('when a relay is modified, the modification is listed in the changes array', () => {
     const r = generateRelayChanges([
       {
         ...SampleEvents.kind10002,
@@ -218,7 +218,7 @@ describe('generateRelaysChanges', () => {
         ],
       } as Kind10002Event,
     ]);
-    expect(r[0].changes).toEqual(['<div class="modified">modified <mark>wss://brando-relay.com read only</mark></div>']);
+    expect(r[0].changes).toEqual(['<div class="modified">modified <mark>wss://brando-relay.com</mark> to <mark class="added">read</mark> instead of <mark class="removed">write</mark></div>']);
   });
   test('when a contact is added and another removed, both events are listed in the changes array', () => {
     const r = generateRelayChanges([
@@ -238,8 +238,8 @@ describe('generateRelaysChanges', () => {
       } as Kind10002Event,
     ]);
     expect(r[0].changes).toEqual([
-      '<div class="added">added <mark>wss://brando-relay1.com write only</mark></div>',
-      '<div class="removed">removed <mark>wss://alicerelay.example.com</mark></div>',
+      '<div>added <mark>wss://brando-relay1.com</mark> as <mark class="added">write</mark> only</div>',
+      '<div>removed <mark>wss://alicerelay.example.com</mark> which was <mark class="removed">read</mark> and <mark class="removed">write</mark></div>',
     ]);
   });
 });
