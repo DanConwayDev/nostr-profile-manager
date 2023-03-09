@@ -168,11 +168,13 @@ export const generateHistoryTable = (history: Event[] | null):string => {
 
 export const activateRestoreButtons = (history: Event[] | null, afterRestore: ()=> void):void => {
   history?.forEach((e, i) => {
+    if (i === 0) return;
     const eid = `restore-${e.kind}-${i}`;
-    const el = document.getElementById(eid) as HTMLButtonElement;
+    const el = document.getElementById(eid) as HTMLAnchorElement;
     const { id, sig, ...unsigned } = e;
     unsigned.created_at = Math.floor(Date.now() / 1000);
-    el.onclick = async () => {
+    el.onclick = async (event) => {
+      event.preventDefault();
       const r = await submitUnsignedEvent(unsigned, eid, 'Restored!');
       if (r) setTimeout(afterRestore, 1000);
     };

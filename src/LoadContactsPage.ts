@@ -1,13 +1,4 @@
-import { fetchCachedProfileEventHistory } from './fetchEvents';
-import { generateHistoryTable } from './LoadHistory';
-
-const loadContactsBackupHistory = (RootElementID:string) => {
-  (document.getElementById(RootElementID) as HTMLDivElement)
-    .innerHTML = `<div class="contactsbackuphistory">
-    <h3>Contacts Backup History</h3>
-    ${generateHistoryTable(fetchCachedProfileEventHistory(3))}
-  </div>`;
-};
+import { loadBackupHistory } from './LoadHistory';
 
 const LoadContactsPage = () => {
   const o:HTMLElement = document.getElementById('PM-container') as HTMLElement;
@@ -16,7 +7,7 @@ const LoadContactsPage = () => {
       <div id="contactsbackuphistory"></div>
     <div>
   `;
-  loadContactsBackupHistory('contactsbackuphistory');
+  loadBackupHistory('contactsbackuphistory', 3);
 };
 
 export default LoadContactsPage;
