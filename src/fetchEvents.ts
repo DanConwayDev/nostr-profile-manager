@@ -1,6 +1,6 @@
 import { Event, UnsignedEvent } from 'nostr-tools';
 import { localStorageGetItem, localStorageSetItem } from './LocalStorage';
-import { publishEventToRelay, requestMyProfileFromRelays } from './RelayManagement';
+import { publishEventToRelay, requestEventsFromRelays } from './RelayManagement';
 
 export const lastFetchDate = ():number | null => {
   const d = localStorageGetItem('my-profile-last-fetch-date');
@@ -114,10 +114,10 @@ export const fetchMyProfileEvents = async (
 ): Promise<void> => {
   // get events from relays, store them and run profileEventProcesser
   if (!isUptodate()) {
-    await requestMyProfileFromRelays(pubkey, (event: Event) => {
+    await requestEventsFromRelays([pubkey], (event: Event) => {
       storeMyProfileEvent(event);
       profileEventProcesser(event);
-    }, getRelays());
+    }, getRelays(), [0, 2, 10002, 3]);
     // update last-fetch-from-relays date
     updateLastFetchDate();
   } else {
@@ -130,7 +130,7 @@ export const fetchMyProfileEvents = async (
 };
 
 export const publishEvent = async (event:Event):Promise<boolean> => {
-  const r = await publishEventToRelay(event);
+  const r = await publishEventToRelay(event, getRelays());
   if (r) storeMyProfileEvent(event);
   return r;
 };

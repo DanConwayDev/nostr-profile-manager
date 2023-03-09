@@ -1,30 +1,25 @@
 import { Event, SimplePool } from 'nostr-tools';
 
 const pool = new SimplePool();
-let currentrelays = [
-  'wss://relay.damus.io',
-  'wss://nostr-pub.wellorder.net',
-  'wss://nostr-relay.wlvs.space',
-];
 
-export const requestMyProfileFromRelays = async (
-  pubkey:string,
+export const requestEventsFromRelays = async (
+  pubkeys:string[],
   eventProcesser: (event: Event) => void,
-  relays?:string[],
+  relays:string[],
+  kinds: number[],
 ) => {
-  if (relays) currentrelays = relays;
   const sub = pool.sub(
-    currentrelays,
+    relays,
     [{
-      kinds: [0, 2, 10002, 3],
-      authors: [pubkey],
+      kinds,
+      authors: pubkeys,
     }],
   );
   return new Promise<void>((r) => {
     sub.on('event', (event:Event) => {
       if (
-        event.pubkey === pubkey
-        && (event.kind === 0 || event.kind === 2 || event.kind === 10002 || event.kind === 3)
+        pubkeys.indexOf(event.pubkey) !== -1
+        && kinds.indexOf(event.kind) !== -1
       ) {
         eventProcesser(event);
       }
@@ -35,8 +30,8 @@ export const requestMyProfileFromRelays = async (
   });
 };
 
-export const publishEventToRelay = async (event:Event):Promise<boolean> => {
-  const pub = pool.publish(currentrelays, event);
+export const publishEventToRelay = async (event:Event, relays:string[]):Promise<boolean> => {
+  const pub = pool.publish(relays, event);
   return new Promise((r) => {
     pub.on('ok', () => r(true));
     pub.on('failed', () => r(false));
