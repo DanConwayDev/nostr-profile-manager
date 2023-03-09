@@ -49,20 +49,6 @@ const generateRelaysSummary = (e:Event | null, loading = false) => {
     return `<div>
       <button
         ${injectLoading(loading)}
-        class="outline secondary"
-      >No Relay</button>
-    </div>`;
-  }
-  return `<div><button ${injectLoading(loading)} class="outline secondary">
-    Relay: ${e.content}
-    </button></div>`;
-};
-
-const generateRelays10002Summary = (e:Event | null, loading = false) => {
-  if (e == null) {
-    return `<div>
-      <button
-        ${injectLoading(loading)}
         id="relaysbutton"
         class="outline secondary"
       >No Relays</button>
@@ -152,8 +138,7 @@ export const LoadProfileHome = () => {
             <div>
               ${generateMetadataSummary(fetchCachedProfileEvent(0), !uptodate)}
               ${generateContactsSummary(fetchCachedProfileEvent(3), !uptodate)}
-              ${generateRelaysSummary(fetchCachedProfileEvent(2), !uptodate)}
-              ${generateRelays10002Summary(fetchCachedProfileEvent(10002), !uptodate)}
+              ${generateRelaysSummary(fetchCachedProfileEvent(10002), !uptodate)}
             </div>
           </article></div>`}
           <div>${generateBackupHeroHeading(uptodate, noprofileinfo, hadlatest)}</div>
