@@ -63,7 +63,7 @@ const generateForm = (c:MetadataFlex | null):string => {
     ${toTextInput('banner', c)}
     ${toTextInput('lud06', c, 'lud06 (LNURL)')}
     ${toTextInput('lud16', c)}
-    ${customkeys.map((k) => toTextInput(k, c))}
+    ${customkeys.map((k) => toTextInput(k, c)).join('')}
     <button id="metadatasubmitbutton" type="submit">${c ? 'Update' : 'Save'}</button>
     <button id="metadataresetbutton" class="secondary outline" type="reset">Reset Form</button>
   </form>`;

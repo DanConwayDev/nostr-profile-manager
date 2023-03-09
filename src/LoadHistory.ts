@@ -16,7 +16,7 @@ const generateChangesTable = (changes:VersionChange[]) => `
                 <td><ul>${c.changes.map((v) => `<li>${v}</li>`).join('')}</ul></td>
                 <td>${c.option}</td>
             </tr>
-        `)}
+        `).join('')}
         </tbody>
     </table>
 `;
