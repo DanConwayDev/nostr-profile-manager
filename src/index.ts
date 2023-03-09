@@ -16,12 +16,6 @@ declare global {
 }
 
 const loadProfile = async () => {
-  // turn on nav
-  (document.getElementById('mainnav') as HTMLElement).classList.remove('inactive');
-  (document.getElementById('navhome') as HTMLElement).onclick = LoadProfileHome;
-  (document.getElementById('navmetadata') as HTMLElement).onclick = LoadMetadataPage;
-  (document.getElementById('navcontacts') as HTMLElement).onclick = LoadContactsPage;
-  (document.getElementById('navrelays') as HTMLElement).onclick = LoadRelaysPage;
   // load profile page (in loading mode)
   LoadProfileHome();
   // load profile data
@@ -31,6 +25,12 @@ const loadProfile = async () => {
   );
   // load profile page (in complete mode)
   LoadProfileHome();
+  // turn on nav
+  (document.getElementById('mainnav') as HTMLElement).classList.remove('inactive');
+  (document.getElementById('navhome') as HTMLElement).onclick = LoadProfileHome;
+  (document.getElementById('navmetadata') as HTMLElement).onclick = LoadMetadataPage;
+  (document.getElementById('navcontacts') as HTMLElement).onclick = LoadContactsPage;
+  (document.getElementById('navrelays') as HTMLElement).onclick = LoadRelaysPage;
 };
 
 const LoadLandingPage = () => {
