@@ -72,3 +72,40 @@ img[src=""] {
         margin-top: 17px;
     }
 }
+
+.hide { display:none;}
+
+#contactdetails {
+    img {
+        display:inline-block;
+        max-width: 20%;
+        padding-right: 16px;
+        vertical-align:top;
+    }
+    .contactdetailsmain {
+        display:inline-block;
+        width:75%;
+    }
+    .contact-form-buttons {
+        margin-top: 34px;
+    }
+}
+
+#searchinput { margin-top: 16px; }
+
+#searchresults ul {
+    padding: 0;
+    margin: 0;
+    li {
+        list-style: none;
+        margin:0;
+        width:30%;
+        display: inline-block;
+    }
+    img {
+        max-width: 75px;
+        border-radius: 38px;
+        float: left;
+        margin: 10px 10px 10px 0;
+    }
+}

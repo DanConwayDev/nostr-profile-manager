@@ -1,4 +1,4 @@
-import { fetchCachedProfileEvent, submitUnsignedEvent } from './fetchEvents';
+import { fetchCachedMyProfileEvent, submitUnsignedEvent } from './fetchEvents';
 import { Kind10002Event, Kind10002Tag, loadBackupHistory } from './LoadHistory';
 import { localStorageGetItem } from './LocalStorage';
 
@@ -94,7 +94,7 @@ const loadRelayForm = (RootElementID:string) => {
   (document.getElementById(RootElementID) as HTMLDivElement)
     .innerHTML = `<div class="relayform">
     <h3>Relays</h3>
-    ${generateRelayForm(fetchCachedProfileEvent(10002) as Kind10002Event)}
+    ${generateRelayForm(fetchCachedMyProfileEvent(10002) as Kind10002Event)}
   </div>`;
   // form submit event
   (document.getElementById('relayssubmitbutton') as HTMLButtonElement).onclick = (event) => {

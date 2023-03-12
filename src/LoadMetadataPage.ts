@@ -1,5 +1,5 @@
 import { nip05 } from 'nostr-tools';
-import { fetchCachedProfileEvent, submitUnsignedEvent } from './fetchEvents';
+import { fetchCachedMyProfileEvent, submitUnsignedEvent } from './fetchEvents';
 import { loadBackupHistory } from './LoadHistory';
 import { localStorageGetItem } from './LocalStorage';
 
@@ -73,7 +73,7 @@ const SubmitMetadataForm = async () => {
   // construct and populate new content object with form data. avoid reordering properties
   const fd = new FormData(document.getElementById('metadataform') as HTMLFormElement);
   const n:{ [x: string]: unknown; } = {};
-  const e = fetchCachedProfileEvent(0);
+  const e = fetchCachedMyProfileEvent(0);
   (e ? [...(Object.keys(JSON.parse(e.content))), ...standardkeys] : standardkeys)
     .forEach((k) => {
       const d = fd.get(`PM-form-${k}`);
@@ -95,7 +95,7 @@ const SubmitMetadataForm = async () => {
 };
 
 const loadMetadataForm = (RootElementID:string) => {
-  const e = fetchCachedProfileEvent(0);
+  const e = fetchCachedMyProfileEvent(0);
   const MetadataContent = !e ? null : JSON.parse(e.content) as MetadataFlex;
   (document.getElementById(RootElementID) as HTMLDivElement)
     .innerHTML = `<div class="profileform">

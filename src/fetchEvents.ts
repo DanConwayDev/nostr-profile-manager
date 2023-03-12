@@ -71,7 +71,7 @@ export const storeMyProfileEvent = (event:Event): boolean => {
   return true;
 };
 
-export const fetchCachedProfileEventHistory = (
+export const fetchCachedMyProfileEventHistory = (
   kind: 0 | 2 | 10002 | 3,
 ): null | [Event, ...Event[]] => {
   // get data from local storage
@@ -85,19 +85,19 @@ export const fetchCachedProfileEventHistory = (
   return a.sort((x, y) => y.created_at - x.created_at);
 };
 
-export const fetchCachedProfileEvent = (kind: 0 | 2 | 10002 | 3): null | Event => {
-  const a = fetchCachedProfileEventHistory(kind);
+export const fetchCachedMyProfileEvent = (kind: 0 | 2 | 10002 | 3): null | Event => {
+  const a = fetchCachedMyProfileEventHistory(kind);
   if (a === null) return null;
   // return Event in array with most recent created_at date
   return a[0];
 };
 
 const getRelays = () => {
-  const e = fetchCachedProfileEvent(10002);
-  const mywriterelays = !e ? [] : e.tags.filter((r) => !r[2] || r[2] === 'write').map((r) => r[1]);
+  const e = fetchCachedMyProfileEvent(10002);
+  const myrelays = !e ? [] : e.tags.map((r) => r[1]);
   // return minimum of 3 relays, filling in with default relays (removing duplicates)
-  return mywriterelays.length > 3 ? mywriterelays : [...new Set([
-    ...mywriterelays,
+  return myrelays.length > 3 ? myrelays : [...new Set([
+    ...myrelays,
     'wss://relay.damus.io',
     'wss://nostr-pub.wellorder.net',
     'wss://nostr-relay.wlvs.space',
@@ -118,7 +118,7 @@ export const fetchMyProfileEvents = async (
     }, starterrelays, [0, 2, 10002, 3]);
     // if new 10002 event found with more write relays
     if (
-      fetchCachedProfileEvent(10002)?.tags
+      fetchCachedMyProfileEvent(10002)?.tags
         .some((t) => starterrelays.indexOf(t[1]) === -1 && (!t[2] || t[2] === 'write'))
     ) {
       // fetch events again to ensure we got all my profile events
@@ -129,10 +129,167 @@ export const fetchMyProfileEvents = async (
   } else {
     // for kinds 0, 2, 10002 and 3
     [0, 2, 10002, 3].forEach((k) => {
-      const e = fetchCachedProfileEvent(k as 0 | 2 | 10002 | 3);
+      const e = fetchCachedMyProfileEvent(k as 0 | 2 | 10002 | 3);
       if (e !== null) profileEventProcesser(e);
     });
   }
+};
+
+const UserProfileEvents:{
+  [pubkey: string]: {
+    [kind: number]: Event;
+  };
+} = {};
+
+const storeProfileEvent = (event:Event) => {
+  if (!UserProfileEvents[event.pubkey]) UserProfileEvents[event.pubkey] = {};
+  if (
+    // no event of kind for pubkey
+    !UserProfileEvents[event.pubkey][event.kind]
+    // newer event of kind recieved
+    || UserProfileEvents[event.pubkey][event.kind].created_at < event.created_at
+  ) {
+    // store it
+    UserProfileEvents[event.pubkey][event.kind] = event;
+  }
+};
+
+export const fetchMyContactsProfileEvents = async () => {
+  const c = fetchCachedMyProfileEvent(3);
+  if (!c || c.tags.length === 0) return;
+  const required = c.tags.filter((p) => !UserProfileEvents[p[1]]);
+  if (required.length > 0) {
+    await requestEventsFromRelays(
+      required.map((t) => t[1]),
+      storeProfileEvent,
+      getRelays(),
+      [0, 10002, 3],
+    );
+    // TODO: check 10002 events and ensure we have read for one of their write relays
+  }
+};
+
+export const fetchCachedProfileEvent = (pubkey:string, kind:0 | 10002 | 3):Event | null => {
+  if (localStorageGetItem('pubkey') === pubkey) return fetchCachedMyProfileEvent(kind);
+  if (!UserProfileEvents[pubkey]) return null;
+  if (!UserProfileEvents[pubkey][kind]) return null;
+  return UserProfileEvents[pubkey][kind];
+};
+
+export const fetchAllCachedProfileEvents = (
+  kind: 0 | 10002 | 3,
+):Event[] => Object.keys(UserProfileEvents)
+  .filter((p) => !!UserProfileEvents[p][kind])
+  .map((p) => UserProfileEvents[p][kind]);
+
+export const fetchProfileEvents = async (
+  pubkeys:[string, ...string[]],
+  kind:0 | 10002 | 3,
+  relays?: string[] | null,
+):Promise<[(Event | null), ...(Event | null)[]]> => {
+  const notcached = pubkeys.filter((p) => !fetchCachedProfileEvent(p, kind));
+  if (notcached.length > 0) {
+    await requestEventsFromRelays(
+      notcached,
+      storeProfileEvent,
+      relays || getRelays(),
+      [0, 10002, 3],
+    );
+  }
+  return pubkeys.map(
+    (p) => fetchCachedProfileEvent(p, kind),
+  ) as [(Event | null), ...(Event | null)[]];
+};
+
+export const fetchProfileEvent = async (
+  pubkey:string,
+  kind:0 | 10002 | 3,
+  relays?: string[] | null,
+):Promise<Event | null> => {
+  const r = await fetchProfileEvents([pubkey], kind, relays);
+  return r[0];
+};
+
+export const getContactMostPopularPetname = (pubkey: string):string | null => {
+  // considered implementing frank.david.erin model in nip-02 but I think the UX is to confusing
+  // get count of petnames for users by other contacts
+  const petnamecounts: { [petname: string]: number } = Object.keys(UserProfileEvents)
+    // returns petname or null
+    .map((pk) => {
+      if (!UserProfileEvents[pk][3]) return null;
+      const petnametag = UserProfileEvents[pk][3].tags.find((t) => t[1] === pubkey && t[3]);
+      if (petnametag) return petnametag[3];
+      return null;
+    })
+    // returns petname counts
+    .reduce((pv, c) => {
+      if (!c) return pv;
+      if (!pv[c]) return { ...pv, [c]: 1 };
+      return { ...pv, [c]: pv[c] + 1 };
+    }, {} as { [petname: string]: number });
+  if (petnamecounts.length === 0) return null;
+  // returns most frequent petname for user amoung contacts (appended with ' (?)')
+  return Object.keys(petnamecounts).sort((a, b) => petnamecounts[b] - petnamecounts[a])[0];
+};
+
+export const getMyPetnameForUser = (pubkey: string): string | null => {
+  const e = fetchCachedMyProfileEvent(3);
+  if (e) {
+    const mypetname = e.tags.find((t) => t[1] === pubkey && t[3]);
+    if (mypetname) return mypetname[3];
+  }
+  return null;
+};
+
+export const getMyRelayForUser = (pubkey: string): string | null => {
+  const e = fetchCachedMyProfileEvent(3);
+  if (e) {
+    const relay = e.tags.find((t) => t[1] === pubkey && t[2] && t[2] !== '');
+    if (relay) return relay[2];
+  }
+  return null;
+};
+
+export const isUserMyContact = (pubkey: string): boolean | null => {
+  const e = fetchCachedMyProfileEvent(3);
+  if (e) {
+    if (e.tags.some((t) => t[1] === pubkey)) return true;
+    return false;
+  }
+  return null;
+};
+
+export const getContactName = (pubkey: string):string => {
+  // my own name
+  if (localStorageGetItem('pubkey') === pubkey) {
+    const m = fetchCachedMyProfileEvent(0);
+    if (m) {
+      const { name } = JSON.parse(m.content);
+      if (name) return name;
+    }
+  } else {
+    // my petname for contact
+    const mypetname = getMyPetnameForUser(pubkey);
+    if (mypetname) return mypetname;
+    // TODO: what about displaying a common petname in brackets if vastly different from their name?
+    // their kind 0 name
+    if (UserProfileEvents[pubkey]) {
+      if (UserProfileEvents[pubkey][0]) {
+        const { name } = JSON.parse(UserProfileEvents[pubkey][0].content);
+        if (name) return name;
+      }
+    }
+  }
+  // most popular petname for user amoung contacts
+  const popularpetname = getContactMostPopularPetname(pubkey);
+  if (popularpetname) return `${popularpetname} (?)`;
+  // return shortened pubkey
+  /**
+   * TODO: add npubEncode
+   * npubEncode is imported from nostr-tools and causes the jest test runner to fail with:
+   * SyntaxError: Cannot use import statement outside a module
+   */
+  return `${pubkey.substring(0, 10)}...`;
 };
 
 export const publishEvent = async (event:Event):Promise<boolean> => {

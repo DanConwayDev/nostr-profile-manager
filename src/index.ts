@@ -1,6 +1,6 @@
 import { Event, UnsignedEvent } from 'nostr-tools';
 import { generateLogoHero, LoadProfileHome } from './LoadProfileHome';
-import { fetchMyProfileEvents } from './fetchEvents';
+import { fetchMyContactsProfileEvents, fetchMyProfileEvents } from './fetchEvents';
 import { localStorageGetItem, localStorageSetItem } from './LocalStorage';
 import { LoadMetadataPage } from './LoadMetadataPage';
 import LoadContactsPage from './LoadContactsPage';
@@ -31,6 +31,8 @@ const loadProfile = async () => {
   (document.getElementById('navmetadata') as HTMLElement).onclick = LoadMetadataPage;
   (document.getElementById('navcontacts') as HTMLElement).onclick = LoadContactsPage;
   (document.getElementById('navrelays') as HTMLElement).onclick = LoadRelaysPage;
+  // get events from my contacts
+  await fetchMyContactsProfileEvents();
 };
 
 const LoadLandingPage = () => {

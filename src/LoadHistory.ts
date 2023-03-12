@@ -1,6 +1,6 @@
 import * as timeago from 'timeago.js';
 import { Event } from 'nostr-tools';
-import { fetchCachedProfileEventHistory, submitUnsignedEvent } from './fetchEvents';
+import { fetchCachedMyProfileEventHistory, submitUnsignedEvent } from './fetchEvents';
 
 export type VersionChange = {
   ago:number;
@@ -69,13 +69,7 @@ const sameContact = (
 
 const getPetname = (a:['p', string, string, string]):string => {
   if (a[3] && a[3].length > 0) return `<mark>${a[3]}</mark>`;
-  return `<mark>${(a[1]).substring(0, 10)}...</mark>`;
-  /**
-   * todo: add npubEncode
-   * npubEncode is imported from nostr-tools and causes the jest test runner to fail with:
-   * SyntaxError: Cannot use import statement outside a module
-   */
-  // return `<mark>${npubEncode(a[1]).substring(0, 10)}...</mark>`;
+  return `<mark id="history-petname-${a[1]}">${(a[1]).substring(0, 10)}...</mark>`;
 };
 
 export const generateContactsChanges = (
@@ -209,7 +203,7 @@ export const activateRestoreButtons = (history: Event[] | null, afterRestore: ()
 };
 
 export const loadBackupHistory = (RootElementID:string, kind: 0 | 10002 | 3) => {
-  const h = fetchCachedProfileEventHistory(kind);
+  const h = fetchCachedMyProfileEventHistory(kind);
   const table = generateHistoryTable(h);
   (document.getElementById(RootElementID) as HTMLDivElement)
     .innerHTML = `<h4>Backup History</h4>${table}`;

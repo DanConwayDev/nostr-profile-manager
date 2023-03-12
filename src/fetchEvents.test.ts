@@ -1,7 +1,7 @@
 import { Event } from 'nostr-tools';
 import SampleEvents from './SampleEvents';
 import {
-  storeMyProfileEvent, fetchCachedProfileEventHistory, fetchCachedProfileEvent,
+  storeMyProfileEvent, fetchCachedMyProfileEventHistory, fetchCachedMyProfileEvent,
   fetchMyProfileEvents,
 } from './fetchEvents';
 import * as LocalStorage from './LocalStorage';
@@ -43,7 +43,7 @@ describe('', () => {
       describe('stores event, returns true and calls updateLastUpdateDate() when', () => {
         test('first event submitted', () => {
           const r = storeMyProfileEvent({ ...SampleEvents[`kind${kind}`] });
-          expect(fetchCachedProfileEventHistory(kind)).toEqual([{ ...SampleEvents[`kind${kind}`] }]);
+          expect(fetchCachedMyProfileEventHistory(kind)).toEqual([{ ...SampleEvents[`kind${kind}`] }]);
           expect(r).toBeTruthy();
           expect(updateLastUpdatedSpy).toHaveBeenCalledTimes(1);
         });
@@ -56,7 +56,7 @@ describe('', () => {
           storeMyProfileEvent(a[0]);
           const r2 = storeMyProfileEvent(a[1]);
           const r3 = storeMyProfileEvent(a[2]);
-          const r = fetchCachedProfileEventHistory(kind);
+          const r = fetchCachedMyProfileEventHistory(kind);
           expect(r).toContainEqual(a[0]);
           expect(r).toContainEqual(a[1]);
           expect(r).toContainEqual(a[2]);
@@ -69,14 +69,14 @@ describe('', () => {
         test('event from a different pubkey submitted', () => {
           const r = storeMyProfileEvent({ ...SampleEvents[`kind${kind}`], pubkey: '1' });
           expect(r).toBeFalsy();
-          expect(fetchCachedProfileEventHistory(kind)).toBeNull();
+          expect(fetchCachedMyProfileEventHistory(kind)).toBeNull();
           expect(updateLastUpdatedSpy).toHaveBeenCalledTimes(0);
         });
         test('duplicate events (events with the same id)', () => {
           storeMyProfileEvent({ ...SampleEvents[`kind${kind}`] });
           const r = storeMyProfileEvent({ ...SampleEvents[`kind${kind}`], content: 'different' });
           expect(r).toBeFalsy();
-          expect(fetchCachedProfileEventHistory(kind)).toEqual([{ ...SampleEvents[`kind${kind}`] }]);
+          expect(fetchCachedMyProfileEventHistory(kind)).toEqual([{ ...SampleEvents[`kind${kind}`] }]);
           expect(updateLastUpdatedSpy).toHaveBeenCalledTimes(1);
         });
       });
@@ -86,11 +86,11 @@ describe('', () => {
       expect(updateLastUpdatedSpy).toHaveBeenCalledTimes(0);
     });
   });
-  describe('fetchCachedProfileEventHistory', () => {
+  describe('fetchCachedMyProfileEventHistory', () => {
     describe('returns array of events', () => {
       test('single event', () => {
         storeMyProfileEvent({ ...SampleEvents.kind0 });
-        expect(fetchCachedProfileEventHistory(0)).toEqual([{ ...SampleEvents.kind0 }]);
+        expect(fetchCachedMyProfileEventHistory(0)).toEqual([{ ...SampleEvents.kind0 }]);
       });
       test('multiple events', () => {
         const a = [
@@ -101,7 +101,7 @@ describe('', () => {
         storeMyProfileEvent(a[0]);
         storeMyProfileEvent(a[1]);
         storeMyProfileEvent(a[2]);
-        const r = fetchCachedProfileEventHistory(0);
+        const r = fetchCachedMyProfileEventHistory(0);
         expect(r).toContainEqual(a[0]);
         expect(r).toContainEqual(a[1]);
         expect(r).toContainEqual(a[2]);
@@ -115,10 +115,10 @@ describe('', () => {
         storeMyProfileEvent(a[0]);
         storeMyProfileEvent(a[1]);
         storeMyProfileEvent(a[2]);
-        const r = fetchCachedProfileEventHistory(0);
+        const r = fetchCachedMyProfileEventHistory(0);
         expect(r).toContainEqual(a[0]);
         expect(r).toContainEqual(a[1]);
-        expect(fetchCachedProfileEventHistory(3)).toContainEqual(a[2]);
+        expect(fetchCachedMyProfileEventHistory(3)).toContainEqual(a[2]);
       });
       test('ordered by created_at decending', () => {
         const a = [
@@ -129,7 +129,7 @@ describe('', () => {
         storeMyProfileEvent({ ...a[0] });
         storeMyProfileEvent({ ...a[1] });
         storeMyProfileEvent({ ...a[2] });
-        const r = fetchCachedProfileEventHistory(0) as Event[];
+        const r = fetchCachedMyProfileEventHistory(0) as Event[];
         expect(r[0]).toEqual(a[1]);
         expect(r[1]).toEqual(a[2]);
         expect(r[2]).toEqual(a[0]);
@@ -137,10 +137,10 @@ describe('', () => {
     });
     test('returns null if no events of kind present', () => {
       storeMyProfileEvent({ ...SampleEvents.kind0 });
-      expect(fetchCachedProfileEventHistory(3)).toBeNull();
+      expect(fetchCachedMyProfileEventHistory(3)).toBeNull();
     });
   });
-  describe('fetchCachedProfileEvent', () => {
+  describe('fetchCachedMyProfileEvent', () => {
     test('returns event of specified kind with largest created_at value', () => {
       const a = [
         { ...SampleEvents.kind0 },
@@ -150,23 +150,23 @@ describe('', () => {
       storeMyProfileEvent({ ...a[0] });
       storeMyProfileEvent({ ...a[1] });
       storeMyProfileEvent({ ...a[2] });
-      const r = fetchCachedProfileEvent(0) as Event;
+      const r = fetchCachedMyProfileEvent(0) as Event;
       expect(r).toEqual(a[1]);
     });
     test('returns null if no events of kind present', () => {
       storeMyProfileEvent({ ...SampleEvents.kind0 });
-      expect(fetchCachedProfileEventHistory(3)).toBeNull();
+      expect(fetchCachedMyProfileEventHistory(3)).toBeNull();
     });
   });
   describe('fetchMyProfileEvents', () => {
-    const fetchCachedProfileEventSpy = jest.spyOn(FetchEvents, 'fetchCachedProfileEvent');
+    const fetchCachedMyProfileEventSpy = jest.spyOn(FetchEvents, 'fetchCachedMyProfileEvent');
     const mockEventProcessor = jest.fn();
     const mockrequestEventsFromRelays = jest.spyOn(RelayManagement, 'requestEventsFromRelays');
     const mockupdateLastFetchDate = jest.spyOn(FetchEvents, 'updateLastFetchDate');
     const mocklastFetchDate = jest.spyOn(FetchEvents, 'lastFetchDate');
     const mockisUptodate = jest.spyOn(FetchEvents, 'isUptodate');
     beforeEach(async () => {
-      fetchCachedProfileEventSpy.mockReset();
+      fetchCachedMyProfileEventSpy.mockReset();
       mockEventProcessor.mockReset();
       mockrequestEventsFromRelays.mockReset();
       mockupdateLastFetchDate.mockReset();
@@ -176,7 +176,7 @@ describe('', () => {
     describe('when isUptodate returns true', () => {
       beforeEach(async () => {
         mockisUptodate.mockReturnValue(true);
-        fetchCachedProfileEventSpy.mockImplementation((kind) => {
+        fetchCachedMyProfileEventSpy.mockImplementation((kind) => {
           if (kind === 0) return { ...SampleEvents.kind0 };
           if (kind === 10002) return null;
           if (kind === 2) return null;
@@ -192,15 +192,15 @@ describe('', () => {
         expect(mockupdateLastFetchDate).toBeCalledTimes(0);
       });
       test('eventProcessor called with latest event from cache for each profile kind with event(s)', async () => {
-        expect(fetchCachedProfileEventSpy).toHaveBeenCalledWith(0);
-        expect(fetchCachedProfileEventSpy).toHaveBeenCalledWith(3);
+        expect(fetchCachedMyProfileEventSpy).toHaveBeenCalledWith(0);
+        expect(fetchCachedMyProfileEventSpy).toHaveBeenCalledWith(3);
         expect(mockEventProcessor).toBeCalledWith({ ...SampleEvents.kind0 });
         expect(mockEventProcessor).toBeCalledWith({ ...SampleEvents.kind3 });
         expect(mockEventProcessor).toHaveBeenCalledTimes(2);
       });
       test('eventProcessor not called on profile event kind that isn\'t present', async () => {
-        expect(fetchCachedProfileEventSpy).toHaveBeenCalledWith(10002);
-        expect(fetchCachedProfileEventSpy).toHaveBeenCalledWith(2);
+        expect(fetchCachedMyProfileEventSpy).toHaveBeenCalledWith(10002);
+        expect(fetchCachedMyProfileEventSpy).toHaveBeenCalledWith(2);
         expect(mockEventProcessor).toBeCalledTimes(2);
       });
     });
@@ -215,7 +215,7 @@ describe('', () => {
             });
           await fetchMyProfileEvents(SampleEvents.kind0.pubkey, mockEventProcessor);
         };
-        test('1 write relays, function called with custom relay and 2 default relays', async () => {
+        test('1 relay, function called with custom relay and 2 default relays', async () => {
           storeMyProfileEvent({
             ...SampleEvents.kind10002,
             tags: [
@@ -234,7 +234,7 @@ describe('', () => {
             expect.anything(),
           );
         });
-        test('2 write relays function called with custom relays and 1 default relays', async () => {
+        test('2 relays function called with custom relays and 1 default relays', async () => {
           storeMyProfileEvent({
             ...SampleEvents.kind10002,
             tags: [
@@ -254,7 +254,7 @@ describe('', () => {
             expect.anything(),
           );
         });
-        test('2 write relays including first defauly relay. function called with custom relays and 1 different default relays', async () => {
+        test('2 relays including first default relay. function called with custom relays and 1 different default relays', async () => {
           storeMyProfileEvent({
             ...SampleEvents.kind10002,
             tags: [
@@ -274,13 +274,13 @@ describe('', () => {
             expect.anything(),
           );
         });
-        test('with 4 write relays function called with all custom relays', async () => {
+        test('with 4 relays function called with all custom relays', async () => {
           storeMyProfileEvent({
             ...SampleEvents.kind10002,
             tags: [
               ['r', 'wss://alicerelay.example.com'],
               ['r', 'wss://brando-relay.com'],
-              ['r', 'wss://expensive-relay.example2.com', 'write'],
+              ['r', 'wss://expensive-relay.example2.com', 'read'],
               ['r', 'wss://alicerelay.example3.com'],
             ],
           });
@@ -293,28 +293,6 @@ describe('', () => {
               'wss://brando-relay.com',
               'wss://expensive-relay.example2.com',
               'wss://alicerelay.example3.com',
-            ],
-            expect.anything(),
-          );
-        });
-        test('custom read relays ignored', async () => {
-          storeMyProfileEvent({
-            ...SampleEvents.kind10002,
-            tags: [
-              ['r', 'wss://alicerelay.example.com'],
-              ['r', 'wss://brando-relay.com'],
-              ['r', 'wss://expensive-relay.example2.com', 'write'],
-              ['r', 'wss://nostr-relay.example.com', 'read'],
-            ],
-          });
-          await doBefore();
-          expect(mockrequestEventsFromRelays).toBeCalledWith(
-            expect.anything(),
-            expect.anything(),
-            [
-              'wss://alicerelay.example.com',
-              'wss://brando-relay.com',
-              'wss://expensive-relay.example2.com',
             ],
             expect.anything(),
           );

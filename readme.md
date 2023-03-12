@@ -1,6 +1,6 @@
 # Nostr Profile Manager
 
-Lightweight and efficent typescript micro app for basic nostr profile management. Current USP is  offline backup and restore.
+Lightweight typescript micro app for basic nostr profile management. Current USP is offline backup and restore.
 
 Only javascript dependancy is [nostr-tools](https://github.com/nbd-wtf/nostr-tools). no JS frameworks. no state management tools.
 
@@ -27,10 +27,12 @@ Supported profile events: kind `0`, `10002` and `3`.
   - [x] profile and banner previews
   - [x] preserve, edit and remove custom properties
 
-- [ ] Contacts
-  - [ ] Add Contacts based on nip05, npub or hex
-  - [ ] Remove Contacts
-  - [ ] Edit petname and relay
+- [x] Contacts
+  - [x] Add Contacts based on nip05, nip19 (npub, nprofile or naddr) or hex
+  - [x] keyword search profiles to find contacts
+  - [ ] keyword search profiles to find contacts of contacts
+  - [x] Remove Contacts
+  - [x] Edit petname and relay
   - [ ] Suggestions Engine 
     - [ ] Contacts recommendation based off social graph
     - [ ] Suggest updates to contact relay based on Contact's kind `10002` and `2` events
@@ -41,9 +43,17 @@ Supported profile events: kind `0`, `10002` and `3`.
   - [ ] evaluation of `10002` based on contact's
   - [ ] decentralisation score to encourage users not to use the same relay
 
-##### Lightweight and Efficent
+- [ ] manage event distribution to relays
+  - [ ] Show which and how many relays return an each event (and including historic events)
+  - [ ] Show warning if selected write relays don't 
+  - [ ] suggest republishing events (particularly `10002`) to spread them to more relays if appropriate
+
+- [ ] look far and wide for events
+    - cycle through all known relays to find current and previous versions of profile events to enable restoration. reccommended only when accessed through a VPN
+##### Lightweight
 - [ ] only javascript dependancy is nostr-tools (TODO: remove timeago)
 - [x] connects to the minimum number of relays
   - [x] connect relays specified in `10002` or 3 default relays
-- [x] minimises the number of open  websockets
+- [ ] minimises the number of open  websockets
 - [x] use blastr relay to send profile events far and wide
+- [ ] efficent (TODO: currently the 'Contacts' functionality is very inefficent)

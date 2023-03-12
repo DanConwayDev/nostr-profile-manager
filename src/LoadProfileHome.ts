@@ -1,6 +1,6 @@
 import { Event } from 'nostr-tools';
 import {
-  fetchCachedProfileEvent, fetchCachedProfileEventHistory, hadLatest, isUptodate,
+  fetchCachedMyProfileEvent, fetchCachedMyProfileEventHistory, hadLatest, isUptodate,
 } from './fetchEvents';
 import LoadContactsPage from './LoadContactsPage';
 import { LoadMetadataPage, MetadataFlex } from './LoadMetadataPage';
@@ -126,7 +126,7 @@ export const generateBackupHeroHeading = (
 };
 
 export const LoadProfileHome = () => {
-  const noprofileinfo = !fetchCachedProfileEvent(0) && !fetchCachedProfileEvent(3);
+  const noprofileinfo = !fetchCachedMyProfileEvent(0) && !fetchCachedMyProfileEvent(3);
   const uptodate = isUptodate();
   const hadlatest = hadLatest();
   const o:HTMLElement = document.getElementById('PM-container') as HTMLElement;
@@ -134,11 +134,11 @@ export const LoadProfileHome = () => {
     <div class="container">
         <div class="hero grid">
           ${noprofileinfo ? generateLogoHero() : `<div><article class="profile-summary-card">
-            ${generateMetadataHeader(fetchCachedProfileEvent(0) as Event)}
+            ${generateMetadataHeader(fetchCachedMyProfileEvent(0) as Event)}
             <div>
-              ${generateMetadataSummary(fetchCachedProfileEvent(0), !uptodate)}
-              ${generateContactsSummary(fetchCachedProfileEvent(3), !uptodate)}
-              ${generateRelaysSummary(fetchCachedProfileEvent(10002), !uptodate)}
+              ${generateMetadataSummary(fetchCachedMyProfileEvent(0), !uptodate)}
+              ${generateContactsSummary(fetchCachedMyProfileEvent(3), !uptodate)}
+              ${generateRelaysSummary(fetchCachedMyProfileEvent(10002), !uptodate)}
             </div>
           </article></div>`}
           <div>${generateBackupHeroHeading(uptodate, noprofileinfo, hadlatest)}</div>
@@ -158,10 +158,10 @@ export const LoadProfileHome = () => {
     donwloada.onclick = (event) => {
       event.preventDefault();
       const jsonStr = JSON.stringify([
-        ...(fetchCachedProfileEventHistory(0) || []),
-        ...(fetchCachedProfileEventHistory(2) || []),
-        ...(fetchCachedProfileEventHistory(10002) || []),
-        ...(fetchCachedProfileEventHistory(3) || []),
+        ...(fetchCachedMyProfileEventHistory(0) || []),
+        ...(fetchCachedMyProfileEventHistory(2) || []),
+        ...(fetchCachedMyProfileEventHistory(10002) || []),
+        ...(fetchCachedMyProfileEventHistory(3) || []),
       ]);
       const element = document.createElement('a');
       element.setAttribute('href', `data:text/plain;charset=utf-8,${encodeURIComponent(jsonStr)}`);
