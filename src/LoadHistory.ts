@@ -69,7 +69,7 @@ const sameContact = (
 
 const getPetname = (a:['p', string, string, string]):string => {
   if (a[3] && a[3].length > 0) return `<mark>${a[3]}</mark>`;
-  return `<mark id="history-petname-${a[1]}">${(a[1]).substring(0, 10)}...</mark>`;
+  return `<mark>${(a[1]).substring(0, 10)}...</mark>`;
 };
 
 export const generateContactsChanges = (
