@@ -51,7 +51,7 @@ const standardkeys = [
 
 const generateForm = (c:MetadataFlex | null):string => {
   const customkeys = !c ? [] : Object.keys(c).filter(((k) => !standardkeys.some((s) => s === k)));
-  return `<form id="metadataform">
+  return `<form id="metadatapageform">
     <div class="grid">
       ${toTextInput('name', c)}
       ${toTextInput('nip05', c)}
@@ -71,7 +71,7 @@ const generateForm = (c:MetadataFlex | null):string => {
 
 const SubmitMetadataForm = async () => {
   // construct and populate new content object with form data. avoid reordering properties
-  const fd = new FormData(document.getElementById('metadataform') as HTMLFormElement);
+  const fd = new FormData(document.getElementById('metadatapageform') as HTMLFormElement);
   const n:{ [x: string]: unknown; } = {};
   const e = fetchCachedMyProfileEvent(0);
   (e ? [...(Object.keys(JSON.parse(e.content))), ...standardkeys] : standardkeys)
@@ -127,12 +127,12 @@ const loadMetadataForm = (RootElementID:string) => {
   checkNip05();
   nip05input.onchange = checkNip05;
   // form submit event
-  (document.getElementById('metadataform') as HTMLButtonElement).onsubmit = (event) => {
+  (document.getElementById('metadatasubmitbutton') as HTMLButtonElement).onclick = (event) => {
     SubmitMetadataForm();
     event.preventDefault();
   };
   // reset form
-  (document.getElementById('metadataresetbutton') as HTMLButtonElement).onsubmit = (event) => {
+  (document.getElementById('metadataresetbutton') as HTMLButtonElement).onclick = (event) => {
     loadMetadataForm(RootElementID);
     event.preventDefault();
   };
@@ -142,10 +142,10 @@ export const LoadMetadataPage = () => {
   const o:HTMLElement = document.getElementById('PM-container') as HTMLElement;
   o.innerHTML = `
     <div id="metadatapage" class="container">
-      <div id="metadataform"></div>
+      <div id="metadataformcontainer"></div>
       <div id="metadatahistory"></div>
     <div>
   `;
-  loadMetadataForm('metadataform');
+  loadMetadataForm('metadataformcontainer');
   loadBackupHistory('metadatahistory', 0);
 };
