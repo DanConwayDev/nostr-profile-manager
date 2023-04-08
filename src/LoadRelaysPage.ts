@@ -45,7 +45,7 @@ const generateRelayForm = (event: Kind10002Event | null):string => `
   <form id="relaysform">
     <table role="grid">
       <tbody id="relayformtbody">
-        ${event?.tags.map((a, i) => generateRelayFormRow(i, a)).join('')}
+        ${!event ? '' : event.tags.map((a, i) => generateRelayFormRow(i, a)).join('')}
         ${generateRelayFormRow(event ? event.tags.length : 0)}
         <tr id="relaybuttons">
           <td>
