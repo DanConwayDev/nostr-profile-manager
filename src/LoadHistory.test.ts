@@ -69,7 +69,9 @@ describe('generateMetadataChanges', () => {
       { ...SampleEvents.kind0, content: JSON.stringify(c) },
       { ...SampleEvents.kind0 },
     ]);
-    expect(r[0].changes).toEqual(['removed about']);
+    expect(r[0].changes).toEqual([
+      'removed about: A mobile bitcoin experience fit for the gods  Est. 563345.  https://zeusln.app',
+    ]);
   });
   test('when a content properties are added, modified and removed, this is all referenced in the changes array', () => {
     const c = { ...kind0content, name: 'Bob', custom: 'custom property value' };
@@ -81,7 +83,7 @@ describe('generateMetadataChanges', () => {
     expect(r[0].changes).toEqual([
       'added custom: custom property value',
       'modified name: Bob',
-      'removed about',
+      'removed about: A mobile bitcoin experience fit for the gods  Est. 563345.  https://zeusln.app',
     ]);
   });
 });

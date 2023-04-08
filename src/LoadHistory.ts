@@ -26,7 +26,7 @@ export const generateMetadataChanges = (
 ):VersionChange[] => history.map((e, i, a) => {
   const changes:string[] = [];
   const c = JSON.parse(e.content);
-  const clean = (s:string | number) => (typeof s === 'string' ? s.replace(/\r?\n|\r/, '') : s);
+  const clean = (s:string | number) => (typeof s === 'string' ? s.replace(/(\r\n|\n|\r)/gm, ' ') : s.toString());
   // if first backup list all fields and values
   if (i === a.length - 1) {
     Object.keys(c).forEach((k) => changes.push(`${k}: ${clean(c[k])}`));
@@ -43,7 +43,11 @@ export const generateMetadataChanges = (
     // list deletes
     Object.keys(nextc)
       .filter((k) => !Object.keys(c).some((v) => v === k))
-      .forEach((k) => { changes.push(`removed ${k}`); });
+      .forEach((k) => {
+        changes.push(
+          `removed ${clean(nextc[k]).length === 0 ? `blank ${k}` : `${k}: ${clean(nextc[k])}`}`,
+        );
+      });
   }
   return {
     ago: e.created_at,
