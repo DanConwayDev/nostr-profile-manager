@@ -4,6 +4,7 @@ import {
 } from './LoadHistory';
 import { MetadataFlex } from './LoadMetadataPage';
 import SampleEvents from './SampleEvents';
+import * as LocalStorage from './LocalStorage';
 
 const weekago = Math.round((Date.now() / 1000) - (60 * 60 * 24 * 7.1));
 const monthsago = Math.round((Date.now() / 1000) - (60 * 60 * 24 * 7 * 5));
@@ -118,6 +119,8 @@ describe('generateContactsChanges', () => {
     test('is removed', () => {
       const s = JSON.parse(JSON.stringify(SampleEvents.kind3));
       delete s.tags[2][3];
+      jest.spyOn(LocalStorage, 'localStorageGetItem')
+        .mockImplementation((): string | null => JSON.stringify([s]));
       const r = generateContactsChanges([
         s,
         { ...SampleEvents.kind3 },
@@ -128,6 +131,8 @@ describe('generateContactsChanges', () => {
     });
     test('is added', () => {
       const s = JSON.parse(JSON.stringify(SampleEvents.kind3));
+      jest.spyOn(LocalStorage, 'localStorageGetItem')
+        .mockImplementation((): string | null => JSON.stringify([{ ...SampleEvents.kind3 }]));
       delete s.tags[2][3];
       const r = generateContactsChanges([
         { ...SampleEvents.kind3 },

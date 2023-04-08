@@ -55,7 +55,7 @@ const generateContactDetails = (pubkey:string):string => {
       <div>
         ${m && !!m.picture ? `<img src="${m.picture}" /> ` : ''}
         <div class="contactdetailsmain">
-          <strong>${m.name ? m.name : '[unknown name]'}</strong>
+          <strong>${getContactName(pubkey)}</strong>
           ${m.nip05 ? `<small id="nip05-${pubkey}">${m.nip05} </small>` : ''}<span id="nip05-${pubkey}-verified"></span>
           ${otherspetname && otherspetname !== m.name ? `<div>popular petname: ${otherspetname}</div>` : ''}
           <div><small>${m.about ? m.about : ''}</small></div>

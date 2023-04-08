@@ -275,8 +275,11 @@ export const getContactName = (pubkey: string):string => {
     // their kind 0 name
     if (UserProfileEvents[pubkey]) {
       if (UserProfileEvents[pubkey][0]) {
-        const { name } = JSON.parse(UserProfileEvents[pubkey][0].content);
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { name, display_name } = JSON.parse(UserProfileEvents[pubkey][0].content);
         if (name) return name;
+        // name isn't present for Jack Dorsey and Vitor from Amethyst in Apr 2023.
+        if (display_name) return display_name;
       }
     }
   }

@@ -1,6 +1,6 @@
 import * as timeago from 'timeago.js';
 import { Event } from 'nostr-tools';
-import { fetchCachedMyProfileEventHistory, submitUnsignedEvent } from './fetchEvents';
+import { fetchCachedMyProfileEventHistory, getContactName, submitUnsignedEvent } from './fetchEvents';
 
 export type VersionChange = {
   ago:number;
@@ -73,7 +73,7 @@ const sameContact = (
 
 const getPetname = (a:['p', string, string, string]):string => {
   if (a[3] && a[3].length > 0) return `<mark>${a[3]}</mark>`;
-  return `<mark>${(a[1]).substring(0, 10)}...</mark>`;
+  return `<mark>${getContactName(a[1])}</mark>`;
 };
 
 export const generateContactsChanges = (
