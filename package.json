@@ -8,7 +8,7 @@
     "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
     "build-js": "esbuild src/index.ts --bundle --minify --sourcemap=external --outfile=dist/index.js",
     "build-css": "yarn sass src/style.scss dist/style.css --style compressed",
-    "build-html": "cp src/index.htm dist/index.htm",
+    "build-html": "cp src/index.html dist/index.html",
     "build": "rm -rf dist && yarn build-js && yarn build-css && yarn build-html && cp -r src/img dist/img",
     "test": "yarn jest",
     "serve": "rm -rf dist && yarn build-css && yarn build-html && cp -r src/img dist/img && yarn build-js --servedir=dist",
