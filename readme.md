@@ -2,7 +2,11 @@
 
 Lightweight typescript micro app for basic nostr profile management. Current USP is offline backup and restore.
 
-Only javascript dependancy is [nostr-tools](https://github.com/nbd-wtf/nostr-tools). no JS frameworks. no state management tools.
+Only javascript dependency is [nostr-tools](https://github.com/nbd-wtf/nostr-tools). no JS frameworks. no state management tools.
+
+## Live instances
+
+- https://metadata.nostr.com/
 
 ## Features
 
@@ -33,7 +37,7 @@ Supported profile events: kind `0`, `10002` and `3`.
   - [ ] keyword search profiles to find contacts of contacts
   - [x] Remove Contacts
   - [x] Edit petname and relay
-  - [ ] Suggestions Engine 
+  - [ ] Suggestions Engine
     - [ ] Contacts recommendation based off social graph
     - [ ] Suggest updates to contact relay based on Contact's kind `10002` and `2` events
 
@@ -45,7 +49,7 @@ Supported profile events: kind `0`, `10002` and `3`.
 
 - [ ] manage event distribution to relays
   - [ ] Show which and how many relays return an each event (and including historic events)
-  - [ ] Show warning if selected write relays don't 
+  - [ ] Show warning if selected write relays don't
   - [ ] suggest republishing events (particularly `10002`) to spread them to more relays if appropriate
 
 - [ ] look far and wide for events
