@@ -5,13 +5,14 @@ import { localStorageGetItem, localStorageSetItem } from './LocalStorage';
 import { LoadMetadataPage } from './LoadMetadataPage';
 import LoadContactsPage from './LoadContactsPage';
 import LoadRelaysPage from './LoadRelaysPage';
+import Logout from './Logout';
 
 declare global {
   interface Window {
     nostr?: {
       getPublicKey: () => Promise<string>;
-      signEvent: (event:UnsignedEvent) => Promise<Event>;
-    }
+      signEvent: (event: UnsignedEvent) => Promise<Event>;
+    };
   }
 }
 
@@ -19,10 +20,7 @@ const loadProfile = async () => {
   // load profile page (in loading mode)
   LoadProfileHome();
   // load profile data
-  await fetchMyProfileEvents(
-    localStorageGetItem('pubkey') as string,
-    LoadProfileHome,
-  );
+  await fetchMyProfileEvents(localStorageGetItem('pubkey') as string, LoadProfileHome);
   // load profile page (in complete mode)
   LoadProfileHome();
   // turn on nav
@@ -31,6 +29,7 @@ const loadProfile = async () => {
   (document.getElementById('navmetadata') as HTMLElement).onclick = LoadMetadataPage;
   (document.getElementById('navcontacts') as HTMLElement).onclick = LoadContactsPage;
   (document.getElementById('navrelays') as HTMLElement).onclick = LoadRelaysPage;
+  (document.getElementById('navlogout') as HTMLElement).onclick = Logout;
   // get events from my contacts
   await fetchMyContactsProfileEvents();
 };
@@ -64,7 +63,7 @@ const LoadLandingPage = () => {
       </div>
     </div>
   `;
-  const o:HTMLElement = document.getElementById('PM-container') as HTMLElement;
+  const o: HTMLElement = document.getElementById('PM-container') as HTMLElement;
   o.innerHTML = aboutcontent;
   const a = document.getElementById('loadextension');
   if (a) {

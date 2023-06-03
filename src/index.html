@@ -1,27 +1,30 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="style.css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
     <title>Nostr Profile Manager</title>
     <script async src="index.js"></script>
   </head>
   <body>
-      <div class="nav-container">
-        <div class="container">
-          <nav>
-            <ul>
-              <li><strong><a href="#" id="navhome" class="secondary">Nostr Profile Manager</a></strong></li>
-            </ul>
-            <ul id="mainnav" class="inactive">
-              <li><a href="#" id="navmetadata" class="secondary">Metadata</a></li>
-              <li><a href="#" id="navcontacts" class="secondary">Contacts</a></li>
-              <li><a href="#" id="navrelays" class="secondary">Relays</a></li>
-            </ul>
-          </nav>
-        </div>
+    <div class="nav-container">
+      <div class="container">
+        <nav>
+          <ul>
+            <li>
+              <strong><a href="#" id="navhome" class="secondary">Nostr Profile Manager</a></strong>
+            </li>
+          </ul>
+          <ul id="mainnav" class="inactive">
+            <li><a href="#" id="navmetadata" class="secondary">Metadata</a></li>
+            <li><a href="#" id="navcontacts" class="secondary">Contacts</a></li>
+            <li><a href="#" id="navrelays" class="secondary">Relays</a></li>
+            <li><a href="#" id="navlogout" class="secondary">Logout</a></li>
+          </ul>
+        </nav>
       </div>
-      <div id="PM-container"></div>
+    </div>
+    <div id="PM-container"></div>
   </body>
 </html>
