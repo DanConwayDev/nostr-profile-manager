@@ -1,5 +1,6 @@
 import * as timeago from 'timeago.js';
 import { Event } from 'nostr-tools';
+import { sanitize } from 'isomorphic-dompurify';
 import { fetchCachedMyProfileEventHistory, getContactName, submitUnsignedEvent } from './fetchEvents';
 
 export type VersionChange = {
@@ -26,7 +27,9 @@ export const generateMetadataChanges = (
 ):VersionChange[] => history.map((e, i, a) => {
   const changes:string[] = [];
   const c = JSON.parse(e.content);
-  const clean = (s:string | number) => (typeof s === 'string' ? s.replace(/(\r\n|\n|\r)/gm, ' ') : s.toString());
+  const clean = (s:string | number) => (sanitize(
+    typeof s === 'string' ? s.replace(/(\r\n|\n|\r)/gm, ' ') : s.toString(),
+  ));
   // if first backup list all fields and values
   if (i === a.length - 1) {
     Object.keys(c).forEach((k) => changes.push(`${k}: ${clean(c[k])}`));

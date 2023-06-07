@@ -1,4 +1,5 @@
 import { Event, nip05, nip19 } from 'nostr-tools';
+import { sanitize } from 'isomorphic-dompurify';
 import {
   fetchAllCachedProfileEvents, fetchCachedMyProfileEvent, fetchCachedProfileEvent,
   fetchProfileEvent, getContactMostPopularPetname, getContactName, getMyPetnameForUser,
@@ -53,12 +54,12 @@ const generateContactDetails = (pubkey:string):string => {
   return `
     <article>
       <div>
-        ${m && !!m.picture ? `<img src="${m.picture}" /> ` : ''}
+        ${m && !!m.picture ? `<img src="${sanitize(m.picture)}" /> ` : ''}
         <div class="contactdetailsmain">
           <strong>${getContactName(pubkey)}</strong>
-          ${m.nip05 ? `<small id="nip05-${pubkey}">${m.nip05} </small>` : ''}<span id="nip05-${pubkey}-verified"></span>
+          ${m.nip05 ? `<small id="nip05-${pubkey}">${sanitize(m.nip05)} </small>` : ''}<span id="nip05-${pubkey}-verified"></span>
           ${otherspetname && otherspetname !== m.name ? `<div>popular petname: ${otherspetname}</div>` : ''}
-          <div><small>${m.about ? m.about : ''}</small></div>
+          <div><small>${m.about ? sanitize(m.about) : ''}</small></div>
         </div>
       </div>
       <footer class="contactdetailsform">
