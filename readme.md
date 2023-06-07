@@ -2,7 +2,7 @@
 
 Lightweight typescript micro app for basic nostr profile management. Current USP is offline backup and restore.
 
-Only javascript dependency is [nostr-tools](https://github.com/nbd-wtf/nostr-tools). no JS frameworks. no state management tools.
+Minimial javascript dependencies. no JS frameworks. no state management tools.
 
 ## Live instances
 
@@ -55,7 +55,6 @@ Supported profile events: kind `0`, `10002` and `3`.
 - [ ] look far and wide for events
     - cycle through all known relays to find current and previous versions of profile events to enable restoration. reccommended only when accessed through a VPN
 ##### Lightweight
-- [ ] only javascript dependancy is nostr-tools (TODO: remove timeago)
 - [x] connects to the minimum number of relays
   - [x] connect relays specified in `10002` or 3 default relays
 - [ ] minimises the number of open  websockets

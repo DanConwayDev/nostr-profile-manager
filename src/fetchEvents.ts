@@ -1,4 +1,5 @@
 import { Event, UnsignedEvent } from 'nostr-tools';
+import { sanitize } from 'isomorphic-dompurify';
 import { localStorageGetItem, localStorageSetItem } from './LocalStorage';
 import { publishEventToRelay, requestEventsFromRelays } from './RelayManagement';
 
@@ -210,6 +211,7 @@ export const fetchProfileEvent = async (
   return r[0];
 };
 
+/** returns sanatized most popular petname for contact */
 export const getContactMostPopularPetname = (pubkey: string):string | null => {
   // considered implementing frank.david.erin model in nip-02 but I think the UX is to confusing
   // get count of petnames for users by other contacts
@@ -218,7 +220,7 @@ export const getContactMostPopularPetname = (pubkey: string):string | null => {
     .map((pk) => {
       if (!UserProfileEvents[pk][3]) return null;
       const petnametag = UserProfileEvents[pk][3].tags.find((t) => t[1] === pubkey && t[3]);
-      if (petnametag) return petnametag[3];
+      if (petnametag) return sanitize(petnametag[3]);
       return null;
     })
     // returns petname counts
@@ -229,14 +231,17 @@ export const getContactMostPopularPetname = (pubkey: string):string | null => {
     }, {} as { [petname: string]: number });
   if (petnamecounts.length === 0) return null;
   // returns most frequent petname for user amoung contacts (appended with ' (?)')
-  return Object.keys(petnamecounts).sort((a, b) => petnamecounts[b] - petnamecounts[a])[0];
+  return sanitize(
+    Object.keys(petnamecounts).sort((a, b) => petnamecounts[b] - petnamecounts[a])[0],
+  );
 };
 
+/** returns my petname for user but sanatized */
 export const getMyPetnameForUser = (pubkey: string): string | null => {
   const e = fetchCachedMyProfileEvent(3);
   if (e) {
     const mypetname = e.tags.find((t) => t[1] === pubkey && t[3]);
-    if (mypetname) return mypetname[3];
+    if (mypetname) return sanitize(mypetname[3]);
   }
   return null;
 };
@@ -259,13 +264,14 @@ export const isUserMyContact = (pubkey: string): boolean | null => {
   return null;
 };
 
+/** get sanatized contact name */
 export const getContactName = (pubkey: string):string => {
   // my own name
   if (localStorageGetItem('pubkey') === pubkey) {
     const m = fetchCachedMyProfileEvent(0);
     if (m) {
       const { name } = JSON.parse(m.content);
-      if (name) return name;
+      if (name) return sanitize(name);
     }
   } else {
     // my petname for contact
@@ -277,9 +283,9 @@ export const getContactName = (pubkey: string):string => {
       if (UserProfileEvents[pubkey][0]) {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { name, display_name } = JSON.parse(UserProfileEvents[pubkey][0].content);
-        if (name) return name;
+        if (name) return sanitize(name);
         // name isn't present for Jack Dorsey and Vitor from Amethyst in Apr 2023.
-        if (display_name) return display_name;
+        if (display_name) return sanitize(display_name);
       }
     }
   }

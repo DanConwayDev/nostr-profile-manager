@@ -1,11 +1,12 @@
 import { nip05 } from 'nostr-tools';
+import { sanitize } from 'isomorphic-dompurify';
 import { fetchCachedMyProfileEvent, submitUnsignedEvent } from './fetchEvents';
 import { loadBackupHistory } from './LoadHistory';
 import { localStorageGetItem } from './LocalStorage';
 
 type MetadataCore = {
   name: string;
-  profile?: string;
+  picture?: string;
   about?: string;
   banner?: string;
   nip05?: string;
@@ -24,7 +25,7 @@ const toTextInput = (prop:string, m:MetadataFlex | null, displayname?:string) =>
           type="text"
           name="PM-form-${prop}"
           id="PM-form-${prop}"
-          placeholder="${displayname || prop}" ${m && m[prop] ? `value="${m[prop]}"` : ''}
+          placeholder="${displayname || prop}" ${m && m[prop] ? `value="${sanitize(m[prop] as string)}"` : ''}
         />
     </label>
 `;
@@ -35,7 +36,7 @@ const toTextarea = (prop:string, m:MetadataFlex | null, displayname?:string) => 
         id="PM-form-${prop}"
         name="PM-form-${prop}"
         placeholder="${displayname || prop}"
-      >${m && m[prop] ? m[prop] : ''}</textarea>
+      >${m && m[prop] ? sanitize(m[prop] as string) : ''}</textarea>
     </label>
 `;
 
@@ -57,9 +58,9 @@ const generateForm = (c:MetadataFlex | null):string => {
       ${toTextInput('nip05', c)}
     </div>
     ${toTextarea('about', c)}
-    <img id="metadata-form-picture" src="${c && c.picture ? c.picture : ''}">
+    <img id="metadata-form-picture" src="${c && c.picture ? sanitize(c.picture) : ''}">
     ${toTextInput('picture', c)}
-    <img id="metadata-form-banner" src="${c && c.banner ? c.banner : ''}">
+    <img id="metadata-form-banner" src="${c && c.banner ? sanitize(c.banner) : ''}">
     ${toTextInput('banner', c)}
     ${toTextInput('lud06', c, 'lud06 (LNURL)')}
     ${toTextInput('lud16', c)}
