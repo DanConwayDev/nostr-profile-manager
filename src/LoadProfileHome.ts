@@ -114,7 +114,7 @@ export const generateBackupHeroHeading = (
     `;
   } else {
     content = `
-      <h1>Profile Backup Up!</h1>
+      <h1>Profile Backed Up!</h1>
       <p>
         We just backed up your latest profile to your offline browser data.
         <a id="downloadprofile" href="#" class="secondary" onclick="event.preventDefault()">Download</a> for safe keeping.
