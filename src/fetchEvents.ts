@@ -99,9 +99,13 @@ const getRelays = () => {
   // return minimum of 3 relays, filling in with default relays (removing duplicates)
   return myrelays.length > 3 ? myrelays : [...new Set([
     ...myrelays,
+    'wss://hist.nostr.land',
     'wss://relay.damus.io',
     'wss://nostr-pub.wellorder.net',
-    'wss://nostr-relay.wlvs.space',
+    'wss://purplepag.es',
+    'wss://relay.nos.social',
+    'wss://relay.nostr.band',
+    'wss://relay.snort.social',
   ])].slice(0, 3);
 };
 
@@ -307,6 +311,10 @@ export const publishEvent = async (event:Event):Promise<boolean> => {
     [
       ...getRelays(),
       'wss://nostr.mutinywallet.com', // blastr
+      'wss://purplepag.es',
+      'wss://relay.nos.social',
+      'wss://relay.nostr.band',
+      'wss://relay.snort.social',
     ],
   );
   if (r) storeMyProfileEvent(event);
