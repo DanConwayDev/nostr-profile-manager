@@ -1,3 +1,6 @@
+dev:
+    fd '.ts|.html|.css' | entr -r bash -c 'just build && python -m http.server -d dist/ 8080'
+
 build:
     rm -rf dist
     esbuild src/index.ts --bundle --minify --sourcemap=external --outfile=dist/index.js
@@ -10,6 +13,3 @@ deploy: lint build
 
 lint:
     eslint src/ --ext .js,.jsx,.ts,.tsx
-
-serve:
-    fd '.ts|.html|.css' | entr -r bash -c 'just build && python -m http.server -d dist/ 8080'
