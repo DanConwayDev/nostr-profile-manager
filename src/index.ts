@@ -67,7 +67,8 @@ const LoadLandingPage = () => {
   o.innerHTML = aboutcontent;
   const a = document.getElementById('loadextension');
   if (a) {
-    a.onclick = async () => {
+    a.onclick = async (ev) => {
+      ev.preventDefault()
       if (window.nostr) {
         const pubkey = await window.nostr.getPublicKey();
         localStorageSetItem('pubkey', pubkey);
