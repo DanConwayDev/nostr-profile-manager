@@ -1,5 +1,5 @@
 dev:
-    fd '.ts|.html|.css' | entr -r bash -c 'just build && python -m http.server -d dist/ 8080'
+    fd '.ts|.html|.css' | entr -r bash -c 'just build && python -m http.server -d dist/ -b 127.0.0.1 8080'
 
 build:
     rm -rf dist
