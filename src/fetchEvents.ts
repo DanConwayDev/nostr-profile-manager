@@ -306,6 +306,7 @@ export const getContactName = (pubkey: string): string => {
 };
 
 export const publishEvent = async (event: Event): Promise<boolean> => {
+  storeMyProfileEvent(event);
   const r = await publishEventToRelay(
     event,
     [
@@ -317,7 +318,6 @@ export const publishEvent = async (event: Event): Promise<boolean> => {
       'wss://relay.snort.social',
     ],
   );
-  if (r) storeMyProfileEvent(event);
   return r;
 };
 /**
