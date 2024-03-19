@@ -2,36 +2,44 @@
     // background-image: url("https://i.imgur.com/DYDX9DU.jpg");
     // background-size:cover
     width: 100%;
-};
+}
+
+;
 
 
 @import "../node_modules/@picocss/pico/scss/pico.scss";
 
 #mainnav.inactive a {
-    display:none;
+    display: none;
 }
+
 .nav-container {
     border-bottom: 1px solid #eee;
 }
+
 .historytable {
     ul {
         padding: 0;
         margin: 0;
     }
+
     li {
         list-style: none;
-        margin:0;
+        margin: 0;
     }
 }
+
 .hero {
-    > div {
-        margin:auto;
+    >div {
+        margin: auto;
     }
+
     img.hero-logo {
-        margin:100px 0;
-        width:300px;
+        margin: 100px 0;
+        width: 300px;
         text-align: center;
     }
+
     h1 {
         margin-bottom: 16px;
     }
@@ -43,19 +51,25 @@ img[src=""] {
 
 .profileform {
     max-width: 800px;
+
     img#metadata-form-banner {
         max-height: 200px;
     }
+
     img#metadata-form-picture {
-        max-height:150px;
-        max-width:150px;
+        max-height: 150px;
+        max-width: 150px;
     }
 }
-.added mark, mark.added {
-    background-color:rgb(29, 255, 116)
+
+.added mark,
+mark.added {
+    background-color: rgb(29, 255, 116)
 }
-.removed mark, mark.removed {
-    background-color:rgb(255, 125, 125)
+
+.removed mark,
+mark.removed {
+    background-color: rgb(255, 125, 125)
 }
 
 .profile-summary-card {
@@ -72,35 +86,43 @@ img[src=""] {
     }
 }
 
-.hide { display:none;}
+.hide {
+    display: none;
+}
 
 #contactdetails {
     img {
-        display:inline-block;
+        display: inline-block;
         max-width: 20%;
         padding-right: 16px;
-        vertical-align:top;
+        vertical-align: top;
     }
+
     .contactdetailsmain {
-        display:inline-block;
-        width:75%;
+        display: inline-block;
+        width: 75%;
     }
+
     .contact-form-buttons {
         margin-top: 34px;
     }
 }
 
-#searchinput { margin-top: 16px; }
+#searchinput {
+    margin-top: 16px;
+}
 
 #searchresults ul {
     padding: 0;
     margin: 0;
+
     li {
         list-style: none;
-        margin:0;
-        width:30%;
+        margin: 0;
+        width: 30%;
         display: inline-block;
     }
+
     img {
         max-width: 75px;
         border-radius: 38px;

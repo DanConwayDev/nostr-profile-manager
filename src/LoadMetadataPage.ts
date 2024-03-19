@@ -18,7 +18,7 @@ export type MetadataFlex = MetadataCore & {
   [x: string | number | symbol]: unknown;
 };
 
-const toTextInput = (prop:string, m:MetadataFlex | null, displayname?:string) => `
+const toTextInput = (prop: string, m: MetadataFlex | null, displayname?: string) => `
     <label for="PM-form-${prop}">
         ${displayname || prop}
         <input
@@ -29,7 +29,7 @@ const toTextInput = (prop:string, m:MetadataFlex | null, displayname?:string) =>
         />
     </label>
 `;
-const toTextarea = (prop:string, m:MetadataFlex | null, displayname?:string) => `
+const toTextarea = (prop: string, m: MetadataFlex | null, displayname?: string) => `
     <label for="PM-form-${prop}">
       ${displayname || prop}
       <textarea
@@ -50,7 +50,7 @@ const standardkeys = [
   'lud16',
 ];
 
-const generateForm = (c:MetadataFlex | null):string => {
+const generateForm = (c: MetadataFlex | null): string => {
   const customkeys = !c ? [] : Object.keys(c).filter(((k) => !standardkeys.some((s) => s === k)));
   return `<form id="metadatapageform">
     <div class="grid">
@@ -73,7 +73,7 @@ const generateForm = (c:MetadataFlex | null):string => {
 const SubmitMetadataForm = async () => {
   // construct and populate new content object with form data. avoid reordering properties
   const fd = new FormData(document.getElementById('metadatapageform') as HTMLFormElement);
-  const n:{ [x: string]: unknown; } = {};
+  const n: { [x: string]: unknown; } = {};
   const e = fetchCachedMyProfileEvent(0);
   (e ? [...(Object.keys(JSON.parse(e.content))), ...standardkeys] : standardkeys)
     .forEach((k) => {
@@ -95,7 +95,7 @@ const SubmitMetadataForm = async () => {
   if (r) loadBackupHistory('metadatahistory', 0);
 };
 
-const loadMetadataForm = (RootElementID:string) => {
+const loadMetadataForm = (RootElementID: string) => {
   const e = fetchCachedMyProfileEvent(0);
   const MetadataContent = !e ? null : JSON.parse(e.content) as MetadataFlex;
   (document.getElementById(RootElementID) as HTMLDivElement)
@@ -117,7 +117,7 @@ const loadMetadataForm = (RootElementID:string) => {
     if (nip05input.value === '') {
       nip05input.removeAttribute('aria-invalid');
     } else {
-      let verified:boolean = false;
+      let verified: boolean = false;
       try {
         const r = await nip05.queryProfile(nip05input.value);
         verified = !!r && r.pubkey === localStorageGetItem('pubkey');
@@ -140,7 +140,7 @@ const loadMetadataForm = (RootElementID:string) => {
 };
 
 export const LoadMetadataPage = () => {
-  const o:HTMLElement = document.getElementById('PM-container') as HTMLElement;
+  const o: HTMLElement = document.getElementById('PM-container') as HTMLElement;
   o.innerHTML = `
     <div id="metadatapage" class="container">
       <div id="metadataformcontainer"></div>

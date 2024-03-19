@@ -2,7 +2,7 @@ import { fetchCachedMyProfileEvent, submitUnsignedEvent } from './fetchEvents';
 import { Kind10002Event, Kind10002Tag, loadBackupHistory } from './LoadHistory';
 import { localStorageGetItem } from './LocalStorage';
 
-const generateRelayFormRow = (index:number, tag?:Kind10002Tag):string => `
+const generateRelayFormRow = (index: number, tag?: Kind10002Tag): string => `
   <tr id="PM-form-relay-${index}-row" class="relayformrow">
     <td>
       <input
@@ -41,7 +41,7 @@ const generateRelayFormRow = (index:number, tag?:Kind10002Tag):string => `
   </tr>
 `;
 
-const generateRelayForm = (event: Kind10002Event | null):string => `
+const generateRelayForm = (event: Kind10002Event | null): string => `
   <form id="relaysform">
     <table role="grid">
       <tbody id="relayformtbody">
@@ -71,7 +71,7 @@ const SubmitRelayForm = async () => {
     if (!url || url === '') return null;
     const w = !!fd.get(`PM-form-relay-${i}-write`);
     const r = !!fd.get(`PM-form-relay-${i}-read`);
-    const base:Kind10002Tag = ['r', url as string];
+    const base: Kind10002Tag = ['r', url as string];
     if (w && r) return base;
     return ['r', fd.get(`PM-form-relay-${i}-address`), r ? 'read' : 'write'] as Kind10002Tag;
   }).filter((v) => v !== null);
@@ -90,7 +90,7 @@ const SubmitRelayForm = async () => {
   loadBackupHistory('relaysbackuphistory', 10002);
 };
 
-const loadRelayForm = (RootElementID:string) => {
+const loadRelayForm = (RootElementID: string) => {
   (document.getElementById(RootElementID) as HTMLDivElement)
     .innerHTML = `<div class="relayform">
     <h3>Relays</h3>
@@ -117,7 +117,7 @@ const loadRelayForm = (RootElementID:string) => {
 };
 
 const LoadRelaysPage = () => {
-  const o:HTMLElement = document.getElementById('PM-container') as HTMLElement;
+  const o: HTMLElement = document.getElementById('PM-container') as HTMLElement;
   o.innerHTML = `
     <div id="relayspage" class="container">
       <div id="relayforcontainer"></div>

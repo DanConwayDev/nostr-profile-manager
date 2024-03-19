@@ -14,9 +14,9 @@ import { localStorageGetItem } from './LocalStorage';
  *     > highligts out suggestions (deleted, do not use, compromised, old profile)
  *     > add relays
  */
-const getPubkey = (e:Event | string) => (typeof e === 'string' ? e : e.pubkey);
+const getPubkey = (e: Event | string) => (typeof e === 'string' ? e : e.pubkey);
 
-const generateMicroCardLi = (eventorpubkey:Event | string):string => {
+const generateMicroCardLi = (eventorpubkey: Event | string): string => {
   const pubkey = getPubkey(eventorpubkey);
   return `
     <li>
@@ -32,13 +32,14 @@ const generateMicroCardLi = (eventorpubkey:Event | string):string => {
   `;
 };
 
-const generateMicroCardList = (eventorpubkeys:(Event | string)[]):string => `
-  <ul id="maincontactlist">${eventorpubkeys.map(
+const generateMicroCardList = (eventorpubkeys: (Event | string)[]): string => {
+  const lis = eventorpubkeys.map(
     (e) => generateMicroCardLi(typeof e === 'string' ? e : e.pubkey),
-  ).join('')}</ul>
-`;
+  ).join('');
+  return `<ul id="maincontactlist">${lis}</ul>`;
+};
 
-const generateContactDetails = (pubkey:string):string => {
+const generateContactDetails = (pubkey: string): string => {
   const e = fetchCachedProfileEvent(pubkey, 0);
   if (!e) {
     return `
@@ -103,7 +104,7 @@ const generateContactDetails = (pubkey:string):string => {
   `;
 };
 
-const loadContactDetails = (pubkey:string):void => {
+const loadContactDetails = (pubkey: string): void => {
   // load html
   (document.getElementById('contactdetails') as HTMLDivElement)
     .innerHTML = generateContactDetails(pubkey);
@@ -129,7 +130,7 @@ const loadContactDetails = (pubkey:string):void => {
     const nip05el = document.getElementById(`nip05-${pubkey}`);
     if (nip05el) {
       const addr = nip05el.innerHTML.trim();
-      let verified:boolean = false;
+      let verified: boolean = false;
       try {
         const r = await nip05.queryProfile(addr);
         verified = !!r && r.pubkey === pubkey;
@@ -147,7 +148,7 @@ const loadContactDetails = (pubkey:string):void => {
     (document.getElementById(`relay-contact-form-${pubkey}`) as HTMLInputElement).value || '',
     (document.getElementById(`petname-contact-form-${pubkey}`) as HTMLInputElement).value || '',
   ];
-  const addUpdateOrRemoveContact = async (tags:['p', string, string, string][], ButtonID: string) => {
+  const addUpdateOrRemoveContact = async (tags: ['p', string, string, string][], ButtonID: string) => {
     await submitUnsignedEvent(
       {
         pubkey: localStorageGetItem('pubkey') as string,
@@ -183,9 +184,9 @@ const loadContactDetails = (pubkey:string):void => {
   };
 };
 
-const processHexOrNip19 = (s:string):{ pubkey: string | null; relays: string[] | null } => {
-  let pubkey:string | null = null;
-  let relays:string[] | null = null;
+const processHexOrNip19 = (s: string): { pubkey: string | null; relays: string[] | null } => {
+  let pubkey: string | null = null;
+  let relays: string[] | null = null;
   // is hex string?
   const regexhex64 = /^[a-fA-F0-9]{64}$/i;
   if (regexhex64.test(s)) {
@@ -196,7 +197,7 @@ const processHexOrNip19 = (s:string):{ pubkey: string | null; relays: string[] |
   try {
     const { data, type } = nip19.decode(s) as {
       type: string, data: {
-        pubkey?:string, // not present in nevent, nsec or note
+        pubkey?: string, // not present in nevent, nsec or note
         relays?: string[];
       }
     };
@@ -211,10 +212,10 @@ const processHexOrNip19 = (s:string):{ pubkey: string | null; relays: string[] |
   return { pubkey, relays };
 };
 
-const nip05cache:{ [nip05Search: string]: string | null } = {};
+const nip05cache: { [nip05Search: string]: string | null } = {};
 
 let nip05Searching = '';
-const searchNip05 = async (input: HTMLInputElement):Promise<null | 'searching' | string> => {
+const searchNip05 = async (input: HTMLInputElement): Promise<null | 'searching' | string> => {
   const s = input.value;
   const searchstatus = document.getElementById('searchstatus') as HTMLDivElement;
   const setLoading = () => { searchstatus.innerHTML = '<p aria-busy="true">Searching nip05...<p>'; };
@@ -257,7 +258,7 @@ const searchNip05 = async (input: HTMLInputElement):Promise<null | 'searching' |
   return repsonse;
 };
 
-const generateResults = (eventorpubkeys:(Event | string)[]) => {
+const generateResults = (eventorpubkeys: (Event | string)[]) => {
   const mycontacts = eventorpubkeys;
   return `
     <div id="contactdetails"></div>
@@ -270,7 +271,7 @@ const generateResults = (eventorpubkeys:(Event | string)[]) => {
   `;
 };
 
-const refreshResults = (eventorpubkeys?:(Event | string)[]) => {
+const refreshResults = (eventorpubkeys?: (Event | string)[]) => {
   (document.getElementById('searchstatus') as HTMLDivElement).innerHTML = '';
   // if called without array load my contacts
   if (!eventorpubkeys) {
@@ -366,7 +367,7 @@ const setSearchInputOnChangeEvent = () => {
   };
 };
 
-const loadViewContacts = (RootElementID:string) => {
+const loadViewContacts = (RootElementID: string) => {
   (document.getElementById(RootElementID) as HTMLDivElement)
     .innerHTML = `
     <div id="contactsearch">
@@ -387,7 +388,7 @@ const loadViewContacts = (RootElementID:string) => {
 };
 
 const LoadContactsPage = () => {
-  const o:HTMLElement = document.getElementById('PM-container') as HTMLElement;
+  const o: HTMLElement = document.getElementById('PM-container') as HTMLElement;
   o.innerHTML = `
     <div id="contactspage" class="container">
       <div id="viewcontacts"></div>

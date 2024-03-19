@@ -4,12 +4,12 @@ import { sanitize } from 'isomorphic-dompurify';
 import { fetchCachedMyProfileEventHistory, getContactName, submitUnsignedEvent } from './fetchEvents';
 
 export type VersionChange = {
-  ago:number;
-  changes:string[];
-  option:string;
+  ago: number;
+  changes: string[];
+  option: string;
 };
 
-const generateChangesTable = (changes:VersionChange[]) => `
+const generateChangesTable = (changes: VersionChange[]) => `
     <table role="grid" class="historytable">
         <tbody>${changes.map((c) => `
             <tr>
@@ -24,10 +24,10 @@ const generateChangesTable = (changes:VersionChange[]) => `
 
 export const generateMetadataChanges = (
   history: Event[],
-):VersionChange[] => history.map((e, i, a) => {
-  const changes:string[] = [];
+): VersionChange[] => history.map((e, i, a) => {
+  const changes: string[] = [];
   const c = JSON.parse(e.content);
-  const clean = (s:string | number) => (sanitize(
+  const clean = (s: string | number) => (sanitize(
     typeof s === 'string' ? s.replace(/(\r\n|\n|\r)/gm, ' ') : s.toString(),
   ));
   // if first backup list all fields and values
@@ -62,27 +62,27 @@ export const generateMetadataChanges = (
 });
 
 export interface Kind3Event extends Event {
-  kind:3;
-  tags:['p', string, string, string][]
+  kind: 3;
+  tags: ['p', string, string, string][]
 }
 
 const sameContact = (
-  x:['p', string, string, string],
-  y:['p', string, string, string],
-):boolean => !!(
+  x: ['p', string, string, string],
+  y: ['p', string, string, string],
+): boolean => !!(
   x[1] === y[1]
-    || (x[3] && y[3] && x[3] === y[3])
+  || (x[3] && y[3] && x[3] === y[3])
 );
 
-const getPetname = (a:['p', string, string, string]):string => {
+const getPetname = (a: ['p', string, string, string]): string => {
   if (a[3] && a[3].length > 0) return `<mark>${a[3]}</mark>`;
   return `<mark title="${a[1]}">${getContactName(a[1])}</mark>`;
 };
 
 export const generateContactsChanges = (
   history: Kind3Event[],
-):VersionChange[] => history.map((e, i, a) => {
-  const changes:string[] = [];
+): VersionChange[] => history.map((e, i, a) => {
+  const changes: string[] = [];
   const current = e.tags.filter((t) => t[0] === 'p');
   // if first backup list all contacts
   if (i === a.length - 1) changes.push(current.map(getPetname).join(', '));
@@ -116,25 +116,25 @@ export const generateContactsChanges = (
   };
 });
 
-export type Kind10002Tag = ['r', string] | ['r', string, 'read' | 'write' ];
+export type Kind10002Tag = ['r', string] | ['r', string, 'read' | 'write'];
 
 export interface Kind10002Event extends Event {
-  kind:3;
-  tags:Kind10002Tag[]
+  kind: 3;
+  tags: Kind10002Tag[]
 }
 
 const summariseRelay = (r: Kind10002Tag): string => r[1] + (r[2] ? ` ${r[2]} only` : '');
 
 export const generateRelayChanges = (
   history: Kind10002Event[],
-):VersionChange[] => history.map((e, i, a) => {
-  const changes:string[] = [];
+): VersionChange[] => history.map((e, i, a) => {
+  const changes: string[] = [];
   const current = e.tags.filter((t) => t[0] === 'r');
   // if first backup list all relays
   if (i === a.length - 1) e.tags.forEach((r) => changes.push(summariseRelay(r)));
   else {
     const next = a[i + 1].tags;
-    const relayReadAndWrite = (r:Kind10002Tag, addedorremoveed: 'added' | 'removed'): string => {
+    const relayReadAndWrite = (r: Kind10002Tag, addedorremoveed: 'added' | 'removed'): string => {
       const wonly = `<mark class="${addedorremoveed}">write</mark>`;
       const ronly = `<mark class="${addedorremoveed}">read</mark>`;
       const randw = `${ronly} and ${wonly}`;
@@ -184,9 +184,9 @@ export const generateRelayChanges = (
   };
 });
 
-export const generateHistoryTable = (history: Event[] | null):string => {
+export const generateHistoryTable = (history: Event[] | null): string => {
   if (!history || history.length === 0) return '<p>none</p>';
-  let changes:VersionChange[];
+  let changes: VersionChange[];
   if (history[0].kind === 0) changes = generateMetadataChanges(history);
   else if (history[0].kind === 3) changes = generateContactsChanges(history as Kind3Event[]);
   else if (history[0].kind === 10002) changes = generateRelayChanges(history as Kind10002Event[]);
@@ -194,7 +194,7 @@ export const generateHistoryTable = (history: Event[] | null):string => {
   return generateChangesTable(changes);
 };
 
-export const activateRestoreButtons = (history: Event[] | null, afterRestore: ()=> void):void => {
+export const activateRestoreButtons = (history: Event[] | null, afterRestore: () => void): void => {
   history?.forEach((e, i) => {
     if (i === 0) return;
     const eid = `restore-${e.kind}-${i}`;
@@ -209,7 +209,7 @@ export const activateRestoreButtons = (history: Event[] | null, afterRestore: ()
   });
 };
 
-export const loadBackupHistory = (RootElementID:string, kind: 0 | 10002 | 3) => {
+export const loadBackupHistory = (RootElementID: string, kind: 0 | 10002 | 3) => {
   const h = fetchCachedMyProfileEventHistory(kind);
   const table = generateHistoryTable(h);
   (document.getElementById(RootElementID) as HTMLDivElement)

@@ -10,9 +10,9 @@ export const generateLogoHero = () => (
   '<div><img class="hero-logo" src="./img/nostr-profile-manage-logo.png"></div>'
 );
 
-const injectLoading = (loading:boolean = true) => `${loading ? 'aria-busy="true"' : ''}`;
+const injectLoading = (loading: boolean = true) => `${loading ? 'aria-busy="true"' : ''}`;
 
-const generateMetadataSummary = (e:Event | null, loading = false) => {
+const generateMetadataSummary = (e: Event | null, loading = false) => {
   if (e == null) {
     return `<div>
       <button ${injectLoading(loading)} class="outline contrast">No Metadata</button>
@@ -29,7 +29,7 @@ const generateMetadataSummary = (e:Event | null, loading = false) => {
   </div>`;
 };
 
-const generateContactsSummary = (e:Event | null, loading = false) => {
+const generateContactsSummary = (e: Event | null, loading = false) => {
   if (e == null) {
     return `<div><button
       ${injectLoading(loading)}
@@ -44,7 +44,7 @@ const generateContactsSummary = (e:Event | null, loading = false) => {
   </div>`;
 };
 
-const generateRelaysSummary = (e:Event | null, loading = false) => {
+const generateRelaysSummary = (e: Event | null, loading = false) => {
   if (e == null) {
     return `<div>
       <button
@@ -65,7 +65,7 @@ const generateRelaysSummary = (e:Event | null, loading = false) => {
     </button></div>`;
 };
 
-const generateMetadataHeader = (e:Event) => {
+const generateMetadataHeader = (e: Event) => {
   const c = JSON.parse(e.content) as MetadataFlex;
   // remove new lines from about
   let about = c.about ? c.about.replace(/\r?\n|\r/, '') : '';
@@ -80,9 +80,9 @@ const generateMetadataHeader = (e:Event) => {
 };
 
 export const generateBackupHeroHeading = (
-  uptodate:boolean,
-  noprofileinfo:boolean,
-  hadlatest:boolean,
+  uptodate: boolean,
+  noprofileinfo: boolean,
+  hadlatest: boolean,
 ) => {
   let content = '';
   if (!uptodate) {
@@ -129,7 +129,7 @@ export const LoadProfileHome = () => {
   const noprofileinfo = !fetchCachedMyProfileEvent(0) && !fetchCachedMyProfileEvent(3);
   const uptodate = isUptodate();
   const hadlatest = hadLatest();
-  const o:HTMLElement = document.getElementById('PM-container') as HTMLElement;
+  const o: HTMLElement = document.getElementById('PM-container') as HTMLElement;
   o.innerHTML = `
     <div class="container">
         <div class="hero grid">

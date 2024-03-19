@@ -3,33 +3,33 @@ import { sanitize } from 'isomorphic-dompurify';
 import { localStorageGetItem, localStorageSetItem } from './LocalStorage';
 import { publishEventToRelay, requestEventsFromRelays } from './RelayManagement';
 
-export const lastFetchDate = ():number | null => {
+export const lastFetchDate = (): number | null => {
   const d = localStorageGetItem('my-profile-last-fetch-date');
   if (d === null) return null;
   return Number(d);
 };
 let fetchedthissession: boolean = false;
-export const updateLastFetchDate = ():void => {
+export const updateLastFetchDate = (): void => {
   fetchedthissession = true;
   localStorageSetItem('my-profile-last-fetch-date', Date.now().toString());
 };
 
-export const lastUpdateDate = ():number | null => {
+export const lastUpdateDate = (): number | null => {
   const d = localStorageGetItem('my-profile-last-update-date');
   if (d === null) return null;
   return Number(d);
 };
 
-export const updateLastUpdateDate = ():void => {
+export const updateLastUpdateDate = (): void => {
   localStorageSetItem('my-profile-last-update-date', Date.now().toString());
 };
 
-export const isUptodate = ():boolean => fetchedthissession;
+export const isUptodate = (): boolean => fetchedthissession;
 // const f = lastFetchDate();
 // // uptodate - fetched within 10 seconds
 // return !(f === null || f < (Date.now() - 10000));
 
-export const hadLatest = ():boolean => {
+export const hadLatest = (): boolean => {
   if (!isUptodate()) return false;
   const f = lastFetchDate();
   const u = lastUpdateDate();
@@ -41,7 +41,7 @@ export const hadLatest = ():boolean => {
  * storeMyProfileEvent
  * @returns true if stored and false duplicate, wrong kind or wrong pubkey
  */
-export const storeMyProfileEvent = (event:Event): boolean => {
+export const storeMyProfileEvent = (event: Event): boolean => {
   // thrown on no pubkey in localStorage
   if (localStorageGetItem('pubkey') === null) {
     throw new Error('storeMyProfileEvent no pubkey in localStorage');
@@ -111,7 +111,7 @@ const getRelays = () => {
 
 /** get my latest profile events either from cache (if isUptodate) or from relays */
 export const fetchMyProfileEvents = async (
-  pubkey:string,
+  pubkey: string,
   profileEventProcesser: (event: Event) => void,
 ): Promise<void> => {
   // get events from relays, store them and run profileEventProcesser
@@ -140,13 +140,13 @@ export const fetchMyProfileEvents = async (
   }
 };
 
-const UserProfileEvents:{
+const UserProfileEvents: {
   [pubkey: string]: {
     [kind: number]: Event;
   };
 } = {};
 
-const storeProfileEvent = (event:Event) => {
+const storeProfileEvent = (event: Event) => {
   if (!UserProfileEvents[event.pubkey]) UserProfileEvents[event.pubkey] = {};
   if (
     // no event of kind for pubkey
@@ -174,7 +174,7 @@ export const fetchMyContactsProfileEvents = async () => {
   }
 };
 
-export const fetchCachedProfileEvent = (pubkey:string, kind:0 | 10002 | 3):Event | null => {
+export const fetchCachedProfileEvent = (pubkey: string, kind: 0 | 10002 | 3): Event | null => {
   if (localStorageGetItem('pubkey') === pubkey) return fetchCachedMyProfileEvent(kind);
   if (!UserProfileEvents[pubkey]) return null;
   if (!UserProfileEvents[pubkey][kind]) return null;
@@ -183,15 +183,15 @@ export const fetchCachedProfileEvent = (pubkey:string, kind:0 | 10002 | 3):Event
 
 export const fetchAllCachedProfileEvents = (
   kind: 0 | 10002 | 3,
-):Event[] => Object.keys(UserProfileEvents)
+): Event[] => Object.keys(UserProfileEvents)
   .filter((p) => !!UserProfileEvents[p][kind])
   .map((p) => UserProfileEvents[p][kind]);
 
 export const fetchProfileEvents = async (
-  pubkeys:[string, ...string[]],
-  kind:0 | 10002 | 3,
+  pubkeys: [string, ...string[]],
+  kind: 0 | 10002 | 3,
   relays?: string[] | null,
-):Promise<[(Event | null), ...(Event | null)[]]> => {
+): Promise<[(Event | null), ...(Event | null)[]]> => {
   const notcached = pubkeys.filter((p) => !fetchCachedProfileEvent(p, kind));
   if (notcached.length > 0) {
     await requestEventsFromRelays(
@@ -207,16 +207,16 @@ export const fetchProfileEvents = async (
 };
 
 export const fetchProfileEvent = async (
-  pubkey:string,
-  kind:0 | 10002 | 3,
+  pubkey: string,
+  kind: 0 | 10002 | 3,
   relays?: string[] | null,
-):Promise<Event | null> => {
+): Promise<Event | null> => {
   const r = await fetchProfileEvents([pubkey], kind, relays);
   return r[0];
 };
 
 /** returns sanatized most popular petname for contact */
-export const getContactMostPopularPetname = (pubkey: string):string | null => {
+export const getContactMostPopularPetname = (pubkey: string): string | null => {
   // considered implementing frank.david.erin model in nip-02 but I think the UX is to confusing
   // get count of petnames for users by other contacts
   const petnamecounts: { [petname: string]: number } = Object.keys(UserProfileEvents)
@@ -269,7 +269,7 @@ export const isUserMyContact = (pubkey: string): boolean | null => {
 };
 
 /** get sanatized contact name */
-export const getContactName = (pubkey: string):string => {
+export const getContactName = (pubkey: string): string => {
   // my own name
   if (localStorageGetItem('pubkey') === pubkey) {
     const m = fetchCachedMyProfileEvent(0);
@@ -305,7 +305,7 @@ export const getContactName = (pubkey: string):string => {
   return `${pubkey.substring(0, 10)}...`;
 };
 
-export const publishEvent = async (event:Event):Promise<boolean> => {
+export const publishEvent = async (event: Event): Promise<boolean> => {
   const r = await publishEventToRelay(
     event,
     [
@@ -327,10 +327,10 @@ export const publishEvent = async (event:Event):Promise<boolean> => {
  * @returns true if event was published, false if it was not
  */
 export const submitUnsignedEvent = async (
-  e:UnsignedEvent,
-  ElementId:string,
-  innerHTMLAfterSuccess:string = 'Update',
-):Promise<boolean> => {
+  e: UnsignedEvent,
+  ElementId: string,
+  innerHTMLAfterSuccess: string = 'Update',
+): Promise<boolean> => {
   const b = document.getElementById(ElementId) as HTMLButtonElement | HTMLAnchorElement;
   // set loading status
   b.setAttribute('disabled', '');

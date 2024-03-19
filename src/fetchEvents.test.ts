@@ -8,7 +8,7 @@ import * as LocalStorage from './LocalStorage';
 import * as FetchEvents from './fetchEvents';
 import * as RelayManagement from './RelayManagement';
 
-let storage:{ [x: string | number | symbol]: unknown; } = {};
+let storage: { [x: string | number | symbol]: unknown; } = {};
 
 jest.spyOn(LocalStorage, 'localStorageSetItem').mockImplementation((key, value) => {
   const k = key as string;

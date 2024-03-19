@@ -3,9 +3,9 @@ import { Event, SimplePool } from 'nostr-tools';
 const pool = new SimplePool();
 
 export const requestEventsFromRelays = async (
-  pubkeys:string[],
+  pubkeys: string[],
   eventProcesser: (event: Event) => void,
-  relays:string[],
+  relays: string[],
   kinds: number[],
 ) => {
   const sub = pool.sub(
@@ -16,7 +16,7 @@ export const requestEventsFromRelays = async (
     }],
   );
   return new Promise<void>((r) => {
-    sub.on('event', (event:Event) => {
+    sub.on('event', (event: Event) => {
       if (
         pubkeys.indexOf(event.pubkey) !== -1
         && kinds.indexOf(event.kind) !== -1
@@ -30,7 +30,7 @@ export const requestEventsFromRelays = async (
   });
 };
 
-export const publishEventToRelay = async (event:Event, relays:string[]):Promise<boolean> => {
+export const publishEventToRelay = async (event: Event, relays: string[]): Promise<boolean> => {
   const pub = pool.publish(relays, event);
   return new Promise((r) => {
     pub.on('ok', () => r(true));
