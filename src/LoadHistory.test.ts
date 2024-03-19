@@ -90,7 +90,7 @@ describe('generateMetadataChanges', () => {
 });
 
 describe('generateContactsChanges', () => {
-  const shortContactPubkey = (a: Kind10002Tag) => `<mark>${(a[1]).substring(0, 10)}...</mark>`;
+  const shortContactPubkey = (a: Kind10002Tag) => `<mark title="${a[1]}">${(a[1]).substring(0, 10)}...</mark>`;
   test('the oldest event list all the contacts as a single change', () => {
     const r = generateContactsChanges([
       { ...SampleEvents.kind3 } as Kind3Event,
