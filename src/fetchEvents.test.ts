@@ -228,8 +228,8 @@ describe('', () => {
             expect.anything(),
             [
               'wss://alicerelay.example.com',
+              'wss://hist.nostr.land',
               'wss://relay.damus.io',
-              'wss://nostr-pub.wellorder.net',
             ],
             expect.anything(),
           );
@@ -249,7 +249,7 @@ describe('', () => {
             [
               'wss://alicerelay.example.com',
               'wss://expensive-relay.example2.com',
-              'wss://relay.damus.io',
+              'wss://hist.nostr.land',
             ],
             expect.anything(),
           );
@@ -258,7 +258,7 @@ describe('', () => {
           storeMyProfileEvent({
             ...SampleEvents.kind10002,
             tags: [
-              ['r', 'wss://relay.damus.io'],
+              ['r', 'wss://hist.nostr.land'],
               ['r', 'wss://expensive-relay.example2.com', 'write'],
             ],
           });
@@ -267,9 +267,9 @@ describe('', () => {
             expect.anything(),
             expect.anything(),
             [
-              'wss://relay.damus.io',
+              'wss://hist.nostr.land',
               'wss://expensive-relay.example2.com',
-              'wss://nostr-pub.wellorder.net',
+              'wss://relay.damus.io',
             ],
             expect.anything(),
           );
@@ -328,9 +328,9 @@ describe('', () => {
             expect.anything(),
             expect.anything(),
             [
+              'wss://hist.nostr.land',
               'wss://relay.damus.io',
               'wss://nostr-pub.wellorder.net',
-              'wss://nostr-relay.wlvs.space',
             ],
             expect.anything(),
           );
@@ -380,8 +380,8 @@ describe('', () => {
             expect.anything(),
             [
               'wss://alicerelay.example.com',
+              'wss://hist.nostr.land',
               'wss://relay.damus.io',
-              'wss://nostr-pub.wellorder.net',
             ],
             expect.anything(),
           );
@@ -397,15 +397,19 @@ describe('', () => {
       mockPublishEventToRelay.mockReset()
         .mockImplementation(() => new Promise((r) => { r(true); }));
     });
-    test('publishEventToRelay is called with getRelays output + blastr', () => {
+    test('publishEventToRelay is called with getRelays output + blastr and extra default write relays', () => {
       FetchEvents.publishEvent(SampleEvents.kind0);
       expect(mockPublishEventToRelay).toBeCalledWith(
         SampleEvents.kind0,
         [
+          'wss://hist.nostr.land',
           'wss://relay.damus.io',
           'wss://nostr-pub.wellorder.net',
-          'wss://nostr-relay.wlvs.space',
           'wss://nostr.mutinywallet.com', // blastr
+          'wss://purplepag.es',
+          'wss://relay.nos.social',
+          'wss://relay.nostr.band',
+          'wss://relay.snort.social',
         ],
       );
     });
