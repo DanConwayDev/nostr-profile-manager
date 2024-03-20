@@ -20,5 +20,5 @@ jobs:
 
     - run: yarn install
     - run: yarn add -D esbuild
-    - run: yarn test
+    - run: yarn jest
     - run: yarn lint
