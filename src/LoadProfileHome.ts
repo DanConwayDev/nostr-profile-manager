@@ -54,14 +54,15 @@ const generateRelaysSummary = (e: Event | null, loading = false) => {
       >No Relays</button>
     </div>`;
   }
-  const read = e.tags.filter((t) => typeof t[2] === 'undefined' || t[2] === 'read').length;
-  const write = e.tags.filter((t) => typeof t[2] === 'undefined' || t[2] === 'write').length;
+  const relayTags = e.tags.filter((t) => t[0] === 'r');
+  const read = relayTags.filter((t) => typeof t[2] === 'undefined' || t[2] === 'read').length;
+  const write = relayTags.filter((t) => typeof t[2] === 'undefined' || t[2] === 'write').length;
   return `<div><button
     ${injectLoading(loading)}
     id="relaysbutton"
     class="outline secondary"
   >
-    ${e.tags.length} Relay${e.tags.length === 1 ? '' : 's'} (${read} read ${write} write)
+    ${relayTags.length} Relay${relayTags.length === 1 ? '' : 's'} (${read} read ${write} write)
     </button></div>`;
 };
 
