@@ -1,6 +1,9 @@
 {
   "name": "nostr-profile-manager",
   "private": true,
+  "scripts": {
+    "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx"
+  },
   "devDependencies": {
     "@types/jest": "^29.4.0",
     "@typescript-eslint/eslint-plugin": "^5.54.0",

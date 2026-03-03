@@ -64,7 +64,21 @@ const generateForm = (c: MetadataFlex | null): string => {
     ${toTextInput('banner', c)}
     ${toTextInput('lud06', c, 'lud06 (LNURL)')}
     ${toTextInput('lud16', c)}
-    ${customkeys.map((k) => toTextInput(k, c)).join('')}
+    <div id="customfieldscontainer">${customkeys.map((k) => toTextInput(k, c)).join('')}</div>
+    <div class="grid">
+      <label for="PM-new-field-name">
+        Add custom field
+        <input
+          type="text"
+          id="PM-new-field-name"
+          name="PM-new-field-name"
+          placeholder="custom field name"
+        />
+      </label>
+      <div style="align-self: end;">
+        <button id="metadataaddfieldbutton" class="secondary" type="button">Add field</button>
+      </div>
+    </div>
     <button id="metadatasubmitbutton" type="submit">${c ? 'Update' : 'Save'}</button>
     <button id="metadataresetbutton" class="secondary outline" type="reset">Reset Form</button>
   </form>`;
@@ -75,11 +89,23 @@ const SubmitMetadataForm = async () => {
   const fd = new FormData(document.getElementById('metadatapageform') as HTMLFormElement);
   const n: { [x: string]: unknown; } = {};
   const e = fetchCachedMyProfileEvent(0);
-  (e ? [...(Object.keys(JSON.parse(e.content))), ...standardkeys] : standardkeys)
-    .forEach((k) => {
-      const d = fd.get(`PM-form-${k}`);
-      if (d && d !== '') n[k] = d;
-    });
+  const existingKeys = e ? Object.keys(JSON.parse(e.content)) : [];
+  const keys: string[] = [
+    ...existingKeys,
+    ...standardkeys.filter((k) => existingKeys.indexOf(k) === -1),
+  ];
+  // include any dynamically added fields present in the form
+  // (those with name starting with PM-form-)
+  Array.from(fd.keys()).forEach((formKey) => {
+    const k = typeof formKey === 'string' && formKey.startsWith('PM-form-')
+      ? formKey.substring('PM-form-'.length)
+      : '';
+    if (k && keys.indexOf(k) === -1) keys.push(k);
+  });
+  keys.forEach((k) => {
+    const d = fd.get(`PM-form-${k}`);
+    if (d && d !== '') n[k] = d;
+  });
   // submit event
   const r = await submitUnsignedEvent(
     {
@@ -127,6 +153,23 @@ const loadMetadataForm = (RootElementID: string) => {
   };
   checkNip05();
   nip05input.onchange = checkNip05;
+  // add-field handler
+  const addButton = document.getElementById('metadataaddfieldbutton') as HTMLButtonElement | null;
+  if (addButton) {
+    addButton.onclick = (event) => {
+      const nameInput = document.getElementById('PM-new-field-name') as HTMLInputElement;
+      const key = nameInput.value.trim();
+      // allow only simple safe keys and avoid duplicates/standard keys
+      const isValidKey = /^[a-zA-Z0-9_-]+$/.test(key);
+      if (!key || !isValidKey) { event.preventDefault(); return; }
+      if (standardkeys.indexOf(key) !== -1) { event.preventDefault(); return; }
+      if (document.getElementById(`PM-form-${key}`)) { event.preventDefault(); return; }
+      const container = document.getElementById('customfieldscontainer') as HTMLDivElement;
+      if (container) container.insertAdjacentHTML('beforeend', toTextInput(key, null));
+      nameInput.value = '';
+      event.preventDefault();
+    };
+  }
   // form submit event
   (document.getElementById('metadatasubmitbutton') as HTMLButtonElement).onclick = (event) => {
     SubmitMetadataForm();
